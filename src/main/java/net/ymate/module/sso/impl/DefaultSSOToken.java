@@ -1,0 +1,126 @@
+/*
+ * Copyright 2007-2017 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package net.ymate.module.sso.impl;
+
+import net.ymate.framework.core.util.WebUtils;
+import net.ymate.framework.webmvc.support.UserSessionBean;
+import net.ymate.module.sso.ISSOToken;
+import net.ymate.module.sso.SSO;
+import net.ymate.platform.core.util.DateTimeUtils;
+import net.ymate.platform.webmvc.context.WebContext;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang.StringUtils;
+
+/**
+ * @author 刘镇 (suninformation@163.com) on 17/1/1 上午5:44
+ * @version 1.0
+ */
+public class DefaultSSOToken implements ISSOToken {
+
+    private String id;
+
+    private String uid;
+
+    private String remoteAddr;
+
+    private String userAgent;
+
+    private long createTime;
+
+    public DefaultSSOToken() {
+    }
+
+    public DefaultSSOToken(String uid) {
+        this.uid = uid;
+        this.remoteAddr = WebUtils.getRemoteAddr(WebContext.getRequest());
+        this.userAgent = WebContext.getRequest().getHeader("User-Agent");
+        this.createTime = System.currentTimeMillis();
+    }
+
+    public DefaultSSOToken(String uid, String userAgent, String remoteAddr, long createTime) {
+        this.uid = uid;
+        this.remoteAddr = StringUtils.defaultIfBlank(remoteAddr, WebUtils.getRemoteAddr(WebContext.getRequest()));
+        this.userAgent = StringUtils.defaultIfBlank(userAgent, WebContext.getRequest().getHeader("User-Agent"));
+        this.createTime = createTime > 0 ? createTime : System.currentTimeMillis();
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
+    }
+
+    public String getRemoteAddr() {
+        return remoteAddr;
+    }
+
+    public void setRemoteAddr(String remoteAddr) {
+        this.remoteAddr = remoteAddr;
+    }
+
+    public String getUserAgent() {
+        return userAgent;
+    }
+
+    public void setUserAgent(String userAgent) {
+        this.userAgent = userAgent;
+    }
+
+    public long getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(long createTime) {
+        this.createTime = createTime;
+    }
+
+    public ISSOToken build() {
+        this.id = __doCreateSignature();
+        return this;
+    }
+
+    private String __doCreateSignature() {
+        return DigestUtils.md5Hex(uid + userAgent + WebContext.getContext().getOwner().getModuleCfg().getCookieAuthKey());
+    }
+
+    public boolean verified() {
+        // 验证客户端与服务端令牌签名是否匹配
+        return StringUtils.equals(id, __doCreateSignature());
+    }
+
+    public boolean timeout() {
+        int _maxage = SSO.get().getModuleCfg().getTokenMaxage();
+        return _maxage > 0 && System.currentTimeMillis() - this.createTime > _maxage * DateTimeUtils.SECOND;
+    }
+
+    public UserSessionBean bindUserSessionBean() {
+        return UserSessionBean
+                .createIfNeed(WebContext.getRequest().getSession().getId()).reset()
+                .setUid(uid)
+                .addAttribute(ISSOToken.class.getName(), this)
+                .save();
+    }
+}
