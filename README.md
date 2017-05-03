@@ -31,6 +31,15 @@
     # 开启会话的IP地址检查, 默认值: false
     ymp.configs.module.sso.ip_check_enabled=
     
+    # 是否为客户端模式, 默认为false
+    ymp.configs.module.sso.client_mode=
+    
+    # 指定服务端基准URL路径(若客户端模式开启时则此项必填), 必须以'http://'或'https://'开始并以'/'结束, 如: http://www.ymate.net/service/, 默认值: 空
+    ymp.configs.module.sso.service_base_url=
+    
+    # 客户端与服务端之间通讯请求参数签名密钥, 默认值: ""
+    ymp.configs.module.sso.service_auth_key=
+    
     # 令牌分析适配器接口实现, 默认值: net.ymate.module.sso.impl.DefaultSSOTokenAdapter
     ymp.configs.module.sso.token_adapter_class=
     

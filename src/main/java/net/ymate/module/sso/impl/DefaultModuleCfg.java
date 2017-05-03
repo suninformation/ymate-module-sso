@@ -44,6 +44,12 @@ public class DefaultModuleCfg implements ISSOModuleCfg {
 
     private boolean __ipCheckEnabled;
 
+    private boolean __isClientMode;
+
+    private String __serviceBaseUrl;
+
+    private String __serviceAuthKey;
+
     private ISSOTokenAdapter __tokenApater;
 
     private ISSOTokenStorageAdapter __tokenStorageAdapter;
@@ -63,12 +69,31 @@ public class DefaultModuleCfg implements ISSOModuleCfg {
         //
         __ipCheckEnabled = BlurObject.bind(_moduleCfgs.get("ip_check_enabled")).toBooleanValue();
         //
+        __isClientMode = BlurObject.bind(_moduleCfgs.get("client_mode")).toBooleanValue();
+        //
+        __serviceAuthKey = StringUtils.trimToEmpty(_moduleCfgs.get("service_auth_key"));
+        //
+        if (__isClientMode) {
+            __serviceBaseUrl = StringUtils.trimToNull(_moduleCfgs.get("service_base_url"));
+            if (__serviceBaseUrl != null) {
+                if (!StringUtils.startsWithIgnoreCase(__serviceBaseUrl, "http://") &&
+                        !StringUtils.startsWithIgnoreCase(__serviceBaseUrl, "https://")) {
+                    throw new IllegalArgumentException("The parameter service_base_url is invalid");
+                } else if (!StringUtils.endsWith(__serviceBaseUrl, "/")) {
+                    __serviceBaseUrl = __serviceBaseUrl + "/";
+                }
+            }
+        }
+        //
         __tokenApater = ClassUtils.impl(_moduleCfgs.get("token_adapter_class"), ISSOTokenAdapter.class, getClass());
         if (__tokenApater == null) {
             __tokenApater = new DefaultSSOTokenAdapter();
         }
         //
         __tokenStorageAdapter = ClassUtils.impl(_moduleCfgs.get("storage_adapter_class"), ISSOTokenStorageAdapter.class, getClass());
+        if (!__isClientMode && __tokenStorageAdapter == null) {
+            throw new IllegalArgumentException("The parameter storage_adapter_class is invalid");
+        }
     }
 
     public String getTokenCookieName() {
@@ -93,6 +118,18 @@ public class DefaultModuleCfg implements ISSOModuleCfg {
 
     public boolean isIpCheckEnabled() {
         return __ipCheckEnabled;
+    }
+
+    public boolean isClientMode() {
+        return __isClientMode;
+    }
+
+    public String getServiceBaseUrl() {
+        return __serviceBaseUrl;
+    }
+
+    public String getServiceAuthKey() {
+        return __serviceAuthKey;
     }
 
     public ISSOTokenAdapter getTokenAdapter() {

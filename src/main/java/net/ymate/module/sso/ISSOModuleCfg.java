@@ -57,6 +57,21 @@ public interface ISSOModuleCfg {
     boolean isIpCheckEnabled();
 
     /**
+     * @return 是否为客户端模式, 默认为false
+     */
+    boolean isClientMode();
+
+    /**
+     * @return 指定服务端基准URL路径(若客户端模式开启时则此项必填), 必须以'http://'或'https://'开始并以'/'结束, 如: http://www.ymate.net/service/, 默认值: 空
+     */
+    String getServiceBaseUrl();
+
+    /**
+     * @return 客户端与服务端之间通讯请求参数签名密钥, 默认值: ""
+     */
+    String getServiceAuthKey();
+
+    /**
      * @return 返回令牌分析适配器接口实现
      */
     ISSOTokenAdapter getTokenAdapter();
