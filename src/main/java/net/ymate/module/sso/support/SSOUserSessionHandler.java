@@ -15,6 +15,11 @@
  */
 package net.ymate.module.sso.support;
 
+import com.alibaba.fastjson.JSON;
+import net.ymate.framework.commons.HttpClientHelper;
+import net.ymate.framework.commons.IHttpResponse;
+import net.ymate.framework.commons.ParamUtils;
+import net.ymate.framework.webmvc.ErrorCode;
 import net.ymate.framework.webmvc.IUserSessionHandler;
 import net.ymate.framework.webmvc.support.UserSessionBean;
 import net.ymate.module.sso.ISSOToken;
@@ -26,6 +31,9 @@ import net.ymate.platform.core.util.RuntimeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 17/1/1 上午4:58
@@ -52,16 +60,28 @@ public class SSOUserSessionHandler implements IUserSessionHandler {
     }
 
     private boolean __doValidateToken(ISSOToken token) {
-        ISSOTokenStorageAdapter _storageAdapter = SSO.get().getModuleCfg().getTokenStorageAdapter();
-        // 尝试从存储中加载原始令牌数据并进行有效性验证
         try {
-            ISSOToken _originalToken = _storageAdapter.load(token.getUid(), token.getId());
-            if (_originalToken != null) {
-                boolean _ipCheck = (SSO.get().getModuleCfg().isIpCheckEnabled() && !StringUtils.equals(token.getRemoteAddr(), _originalToken.getRemoteAddr()));
-                if (_originalToken.timeout() || !_originalToken.verified() || _ipCheck) {
-                    _storageAdapter.remove(_originalToken.getUid(), _originalToken.getId());
-                } else {
-                    return true;
+            if (SSO.get().getModuleCfg().isClientMode()) {
+                Map<String, String> _params = new HashMap<String, String>();
+                _params.put("id", token.getId());
+                _params.put("uid", token.getUid());
+                _params.put("remote_addr", token.getRemoteAddr());
+                _params.put("sign", ParamUtils.createSignature(_params, false, SSO.get().getModuleCfg().getServiceAuthKey()));
+                IHttpResponse _result = HttpClientHelper.create().post(SSO.get().getModuleCfg().getServiceBaseUrl().concat("sso/authorize"), _params);
+                if (_result != null && _result.getStatusCode() == 200) {
+                    return JSON.parseObject(_result.getContent()).getIntValue("ret") == ErrorCode.SUCCESSED;
+                }
+            } else {
+                ISSOTokenStorageAdapter _storageAdapter = SSO.get().getModuleCfg().getTokenStorageAdapter();
+                // 尝试从存储中加载原始令牌数据并进行有效性验证
+                ISSOToken _originalToken = _storageAdapter.load(token.getUid(), token.getId());
+                if (_originalToken != null) {
+                    boolean _ipCheck = (SSO.get().getModuleCfg().isIpCheckEnabled() && !StringUtils.equals(token.getRemoteAddr(), _originalToken.getRemoteAddr()));
+                    if (_originalToken.timeout() || !_originalToken.verified() || _ipCheck) {
+                        _storageAdapter.remove(_originalToken.getUid(), _originalToken.getId());
+                    } else {
+                        return true;
+                    }
                 }
             }
         } catch (Exception e) {
