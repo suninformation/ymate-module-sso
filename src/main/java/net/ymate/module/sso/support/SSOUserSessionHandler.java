@@ -28,9 +28,12 @@ import net.ymate.module.sso.ISSOTokenStorageAdapter;
 import net.ymate.module.sso.SSO;
 import net.ymate.platform.core.beans.intercept.InterceptContext;
 import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.webmvc.context.WebContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.Header;
+import org.apache.http.message.BasicHeader;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -67,7 +70,7 @@ public class SSOUserSessionHandler implements IUserSessionHandler {
                 _params.put("uid", token.getUid());
                 _params.put("remote_addr", token.getRemoteAddr());
                 _params.put("sign", ParamUtils.createSignature(_params, false, SSO.get().getModuleCfg().getServiceAuthKey()));
-                IHttpResponse _result = HttpClientHelper.create().post(SSO.get().getModuleCfg().getServiceBaseUrl().concat("sso/authorize"), _params);
+                IHttpResponse _result = HttpClientHelper.create().post(SSO.get().getModuleCfg().getServiceBaseUrl().concat("sso/authorize"), _params, new Header[]{new BasicHeader("User-Agent", WebContext.getRequest().getHeader("User-Agent"))});
                 if (_result != null && _result.getStatusCode() == 200) {
                     return JSON.parseObject(_result.getContent()).getIntValue("ret") == ErrorCode.SUCCESSED;
                 }
