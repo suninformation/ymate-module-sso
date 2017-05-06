@@ -66,7 +66,7 @@ public class SSOUserSessionHandler implements IUserSessionHandler {
         try {
             if (SSO.get().getModuleCfg().isClientMode()) {
                 Map<String, String> _params = new HashMap<String, String>();
-                _params.put("id", token.getId());
+                _params.put("token_id", token.getId());
                 _params.put("uid", token.getUid());
                 _params.put("remote_addr", token.getRemoteAddr());
                 _params.put("sign", ParamUtils.createSignature(_params, false, SSO.get().getModuleCfg().getServiceAuthKey()));

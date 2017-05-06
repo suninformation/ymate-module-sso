@@ -71,13 +71,13 @@ public class SSOTokenController {
             return View.redirectView(ParamUtils.appendQueryParamValue(redirectUrl, _params, true, WebContext.getContext().getOwner().getModuleCfg().getDefaultCharsetEncoding()));
         }
         //
-        String _redirectUrl = WebUtils.buildRedirectURL(null, StringUtils.defaultIfBlank(WebContext.getContext().getOwner().getOwner().getConfig().getParam(Optional.REDIRECT_LOGIN_URL), "login?redirect_url=${redirect_url}"), true);
+        String _redirectUrl = WebUtils.buildRedirectURL(null, StringUtils.defaultIfBlank(WebContext.getContext().getOwner().getOwner().getConfig().getParam(Optional.REDIRECT_LOGIN_URL), "sso/authorize?redirect_url=${redirect_url}"), true);
         _redirectUrl = ExpressionUtils.bind(_redirectUrl).set(Optional.REDIRECT_URL, WebUtils.encodeURL(redirectUrl)).getResult();
         return View.redirectView(_redirectUrl);
     }
 
     /**
-     * @param id         令牌唯一标识
+     * @param tokenId    令牌唯一标识
      * @param uid        用户唯一标识
      * @param remoteAddr 用户IP地址
      * @param sign       参数签名
@@ -85,7 +85,7 @@ public class SSOTokenController {
      * @throws Exception 可能产生的任何异常
      */
     @RequestMapping(value = "/authorize", method = Type.HttpMethod.POST)
-    public IView __doAuthorize(@RequestParam String id,
+    public IView __doAuthorize(@RequestParam("token_id") String tokenId,
                                @RequestParam String uid,
                                @RequestParam("remote_addr") String remoteAddr,
                                @RequestParam String sign) throws Exception {
@@ -94,9 +94,9 @@ public class SSOTokenController {
             return HttpStatusView.METHOD_NOT_ALLOWED;
         }
         //
-        if (StringUtils.isNotBlank(id) && StringUtils.isNotBlank(uid) && StringUtils.isNotBlank(remoteAddr) && StringUtils.isNotBlank(sign)) {
+        if (StringUtils.isNotBlank(tokenId) && StringUtils.isNotBlank(uid) && StringUtils.isNotBlank(remoteAddr) && StringUtils.isNotBlank(sign)) {
             Map<String, String> _params = new HashMap<String, String>();
-            _params.put("id", id);
+            _params.put("token_id", tokenId);
             _params.put("uid", uid);
             _params.put("remote_addr", remoteAddr);
             //
@@ -104,7 +104,7 @@ public class SSOTokenController {
             if (StringUtils.equals(sign, _sign)) {
                 ISSOTokenStorageAdapter _storageAdapter = SSO.get().getModuleCfg().getTokenStorageAdapter();
                 // 尝试从存储中加载原始令牌数据并进行有效性验证
-                ISSOToken _token = _storageAdapter.load(uid, id);
+                ISSOToken _token = _storageAdapter.load(uid, tokenId);
                 if (_token != null) {
                     boolean _ipCheck = (SSO.get().getModuleCfg().isIpCheckEnabled() && !StringUtils.equals(remoteAddr, _token.getRemoteAddr()));
                     if (_token.timeout() || !_token.verified() || _ipCheck) {
