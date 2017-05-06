@@ -46,6 +46,10 @@ import java.util.Map;
 public class SSOTokenController {
 
     /**
+     * <p>
+     * 当存在跨域获取SSO令牌的情况时，需要调整SSO客户端的参数配置：webmvc.redirect_login_url=sso/authorize?redirect_url=${redirect_url}，服务端则仍保持原参数配置不变即可。
+     * </p>
+     *
      * @param redirectUrl 重定向URL地址
      * @return 尝试获取当前登录用户的SSO令牌(主要适用于跨域单点登录)
      * @throws Exception 可能产生的任何异常
@@ -59,7 +63,7 @@ public class SSOTokenController {
         if (SSO.get().getModuleCfg().isClientMode()) {
             Map<String, String> _params = new HashMap<String, String>();
             _params.put(Optional.REDIRECT_URL, redirectUrl);
-            //
+            // 当客户端访问该控制器方法时，将请求重定向至服务端
             return View.redirectView(ParamUtils.appendQueryParamValue(SSO.get().getModuleCfg().getServiceBaseUrl().concat("sso/authorize"), _params, true, WebContext.getContext().getOwner().getModuleCfg().getDefaultCharsetEncoding()));
         }
         //
@@ -67,11 +71,11 @@ public class SSOTokenController {
         if (_token != null) {
             Map<String, String> _params = new HashMap<String, String>();
             _params.put(SSO.get().getModuleCfg().getTokenParamName(), SSO.get().getModuleCfg().getTokenAdapter().encryptToken(_token));
-            //
+            // 当前服务端用户已登录，则重定向至redirectUrl地址将携带token参数
             return View.redirectView(ParamUtils.appendQueryParamValue(redirectUrl, _params, true, WebContext.getContext().getOwner().getModuleCfg().getDefaultCharsetEncoding()));
         }
-        //
-        String _redirectUrl = WebUtils.buildRedirectURL(null, StringUtils.defaultIfBlank(WebContext.getContext().getOwner().getOwner().getConfig().getParam(Optional.REDIRECT_LOGIN_URL), "sso/authorize?redirect_url=${redirect_url}"), true);
+        // 当前服务端用户尚未登录，则重定向登录视图
+        String _redirectUrl = WebUtils.buildRedirectURL(null, StringUtils.defaultIfBlank(WebContext.getContext().getOwner().getOwner().getConfig().getParam(Optional.REDIRECT_LOGIN_URL), "login?redirect_url=${redirect_url}"), true);
         _redirectUrl = ExpressionUtils.bind(_redirectUrl).set(Optional.REDIRECT_URL, WebUtils.encodeURL(redirectUrl)).getResult();
         return View.redirectView(_redirectUrl);
     }
