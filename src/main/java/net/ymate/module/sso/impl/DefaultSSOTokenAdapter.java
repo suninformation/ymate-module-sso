@@ -54,6 +54,10 @@ public class DefaultSSOTokenAdapter implements ISSOTokenAdapter {
                     .toStringValue();
             _token = decryptToken(_tokenStr);
             if (_token == null) {
+                // 尝试从请求参数中获取Token数据
+                _token = decryptToken(WebContext.getRequest().getParameter(__owner.getModuleCfg().getTokenParamName()));
+            }
+            if (_token == null) {
                 // 尝试从请求头中获取Token数据
                 _token = decryptToken(WebContext.getRequest().getHeader(__owner.getModuleCfg().getTokenHeaderName()));
             }

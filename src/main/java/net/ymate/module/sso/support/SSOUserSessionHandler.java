@@ -72,6 +72,8 @@ public class SSOUserSessionHandler implements IUserSessionHandler {
                 _params.put("sign", ParamUtils.createSignature(_params, false, SSO.get().getModuleCfg().getServiceAuthKey()));
                 IHttpResponse _result = HttpClientHelper.create().post(SSO.get().getModuleCfg().getServiceBaseUrl().concat("sso/authorize"), _params, new Header[]{new BasicHeader("User-Agent", WebContext.getRequest().getHeader("User-Agent"))});
                 if (_result != null && _result.getStatusCode() == 200) {
+                    // 令牌验证通过，则进行本地Cookie存储
+                    SSO.get().getModuleCfg().getTokenAdapter().setToken(token);
                     return JSON.parseObject(_result.getContent()).getIntValue("ret") == ErrorCode.SUCCESSED;
                 }
             } else {

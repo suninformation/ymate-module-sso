@@ -36,6 +36,8 @@ public class DefaultModuleCfg implements ISSOModuleCfg {
 
     private String __tokenHeaderName;
 
+    private String __tokenParamName;
+
     private int __tokenMaxage;
 
     private String __cacheNamePrefix;
@@ -60,6 +62,8 @@ public class DefaultModuleCfg implements ISSOModuleCfg {
         __tokenCookieName = StringUtils.defaultIfBlank(_moduleCfgs.get("token_cookie_name"), ISSO.MODULE_NAME + "_token");
         //
         __tokenHeaderName = StringUtils.defaultIfBlank(_moduleCfgs.get("token_header_name"), "X-ModuleSSO-Token");
+        //
+        __tokenParamName = StringUtils.defaultIfBlank(_moduleCfgs.get("token_param_name"), "token");
         //
         __tokenMaxage = BlurObject.bind(_moduleCfgs.get("token_maxage")).toIntValue();
         //
@@ -102,6 +106,10 @@ public class DefaultModuleCfg implements ISSOModuleCfg {
 
     public String getTokenHeaderName() {
         return __tokenHeaderName;
+    }
+
+    public String getTokenParamName() {
+        return __tokenParamName;
     }
 
     public int getTokenMaxage() {

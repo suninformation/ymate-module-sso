@@ -32,6 +32,11 @@ public interface ISSOModuleCfg {
     String getTokenHeaderName();
 
     /**
+     * @return 令牌URL参数名称, 默认为token
+     */
+    String getTokenParamName();
+
+    /**
      * @return 令牌生命周期(秒)
      */
     int getTokenMaxage();

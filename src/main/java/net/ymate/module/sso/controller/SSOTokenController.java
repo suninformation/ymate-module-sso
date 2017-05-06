@@ -16,16 +16,21 @@
 package net.ymate.module.sso.controller;
 
 import net.ymate.framework.commons.ParamUtils;
+import net.ymate.framework.core.Optional;
+import net.ymate.framework.core.util.WebUtils;
 import net.ymate.framework.webmvc.ErrorCode;
 import net.ymate.framework.webmvc.WebResult;
 import net.ymate.module.sso.ISSOToken;
 import net.ymate.module.sso.ISSOTokenStorageAdapter;
 import net.ymate.module.sso.SSO;
+import net.ymate.platform.core.util.ExpressionUtils;
 import net.ymate.platform.webmvc.annotation.Controller;
 import net.ymate.platform.webmvc.annotation.RequestMapping;
 import net.ymate.platform.webmvc.annotation.RequestParam;
 import net.ymate.platform.webmvc.base.Type;
+import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.view.IView;
+import net.ymate.platform.webmvc.view.View;
 import net.ymate.platform.webmvc.view.impl.HttpStatusView;
 import org.apache.commons.lang.StringUtils;
 
@@ -40,6 +45,45 @@ import java.util.Map;
 @RequestMapping("/sso")
 public class SSOTokenController {
 
+    /**
+     * @param redirectUrl 重定向URL地址
+     * @return 尝试获取当前登录用户的SSO令牌(主要适用于跨域单点登录)
+     * @throws Exception 可能产生的任何异常
+     */
+    @RequestMapping("/authorize")
+    public IView __toAuthorize(@RequestParam(Optional.REDIRECT_URL) String redirectUrl) throws Exception {
+        if (StringUtils.isBlank(redirectUrl) || StringUtils.contains(redirectUrl, "/sso/authorize")) {
+            return HttpStatusView.METHOD_NOT_ALLOWED;
+        }
+        //
+        if (SSO.get().getModuleCfg().isClientMode()) {
+            Map<String, String> _params = new HashMap<String, String>();
+            _params.put(Optional.REDIRECT_URL, redirectUrl);
+            //
+            return View.redirectView(ParamUtils.appendQueryParamValue(SSO.get().getModuleCfg().getServiceBaseUrl().concat("sso/authorize"), _params, true, WebContext.getContext().getOwner().getModuleCfg().getDefaultCharsetEncoding()));
+        }
+        //
+        ISSOToken _token = SSO.get().currentToken();
+        if (_token != null) {
+            Map<String, String> _params = new HashMap<String, String>();
+            _params.put(SSO.get().getModuleCfg().getTokenParamName(), SSO.get().getModuleCfg().getTokenAdapter().encryptToken(_token));
+            //
+            return View.redirectView(ParamUtils.appendQueryParamValue(redirectUrl, _params, true, WebContext.getContext().getOwner().getModuleCfg().getDefaultCharsetEncoding()));
+        }
+        //
+        String _redirectUrl = WebUtils.buildRedirectURL(null, StringUtils.defaultIfBlank(WebContext.getContext().getOwner().getOwner().getConfig().getParam(Optional.REDIRECT_LOGIN_URL), "login?redirect_url=${redirect_url}"), true);
+        _redirectUrl = ExpressionUtils.bind(_redirectUrl).set(Optional.REDIRECT_URL, WebUtils.encodeURL(redirectUrl)).getResult();
+        return View.redirectView(_redirectUrl);
+    }
+
+    /**
+     * @param id         令牌唯一标识
+     * @param uid        用户唯一标识
+     * @param remoteAddr 用户IP地址
+     * @param sign       参数签名
+     * @return 验证客户端令牌有效性及状态
+     * @throws Exception 可能产生的任何异常
+     */
     @RequestMapping(value = "/authorize", method = Type.HttpMethod.POST)
     public IView __doAuthorize(@RequestParam String id,
                                @RequestParam String uid,
@@ -47,7 +91,7 @@ public class SSOTokenController {
                                @RequestParam String sign) throws Exception {
 
         if (SSO.get().getModuleCfg().isClientMode()) {
-            return HttpStatusView.NOT_FOUND;
+            return HttpStatusView.METHOD_NOT_ALLOWED;
         }
         //
         if (StringUtils.isNotBlank(id) && StringUtils.isNotBlank(uid) && StringUtils.isNotBlank(remoteAddr) && StringUtils.isNotBlank(sign)) {

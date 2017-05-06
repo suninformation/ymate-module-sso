@@ -22,6 +22,9 @@
     # 令牌存储在请求头中的名称, 默认值: X-ModuleSSO-Token
     ymp.configs.module.sso.token_header_name=
     
+    # 令牌URL参数名称, 默认值: token
+    ymp.configs.module.sso.token_param_name=
+    
     # 令牌生命周期(秒), 默认值为0, 小于等于0表示不启用
     ymp.configs.module.sso.token_maxage=
     
