@@ -24,6 +24,9 @@ import net.ymate.platform.webmvc.context.WebContext;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang.StringUtils;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author 刘镇 (suninformation@163.com) on 17/1/1 上午5:44
  * @version 1.0
@@ -40,10 +43,14 @@ public class DefaultSSOToken implements ISSOToken {
 
     private long createTime;
 
+    private Map<String, String> __attributes;
+
     public DefaultSSOToken() {
+        this.__attributes = new HashMap<String, String>();
     }
 
     public DefaultSSOToken(String uid) {
+        this();
         this.uid = uid;
         this.remoteAddr = WebUtils.getRemoteAddr(WebContext.getRequest());
         this.userAgent = WebContext.getRequest().getHeader("User-Agent");
@@ -51,6 +58,7 @@ public class DefaultSSOToken implements ISSOToken {
     }
 
     public DefaultSSOToken(String uid, String userAgent, String remoteAddr, long createTime) {
+        this();
         this.uid = uid;
         this.remoteAddr = StringUtils.defaultIfBlank(remoteAddr, WebUtils.getRemoteAddr(WebContext.getRequest()));
         this.userAgent = StringUtils.defaultIfBlank(userAgent, WebContext.getRequest().getHeader("User-Agent"));
@@ -95,6 +103,23 @@ public class DefaultSSOToken implements ISSOToken {
 
     public void setCreateTime(long createTime) {
         this.createTime = createTime;
+    }
+
+    public boolean hasAttribute(String name) {
+        return __attributes.containsKey(name);
+    }
+
+    public String getAttribute(String name) {
+        return __attributes.get(name);
+    }
+
+    public ISSOToken addAttribute(String name, String value) {
+        __attributes.put(name, value);
+        return this;
+    }
+
+    public Map<String, String> getAttributes() {
+        return __attributes;
     }
 
     public ISSOToken build() {

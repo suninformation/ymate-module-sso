@@ -15,10 +15,7 @@
  */
 package net.ymate.module.sso.impl;
 
-import net.ymate.module.sso.ISSO;
-import net.ymate.module.sso.ISSOModuleCfg;
-import net.ymate.module.sso.ISSOTokenAdapter;
-import net.ymate.module.sso.ISSOTokenStorageAdapter;
+import net.ymate.module.sso.*;
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.util.ClassUtils;
@@ -55,6 +52,8 @@ public class DefaultModuleCfg implements ISSOModuleCfg {
     private ISSOTokenAdapter __tokenApater;
 
     private ISSOTokenStorageAdapter __tokenStorageAdapter;
+
+    private ISSOTokenAttributeAdapter __tokenAttributeAdapter;
 
     public DefaultModuleCfg(YMP owner) {
         Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(ISSO.MODULE_NAME);
@@ -97,6 +96,10 @@ public class DefaultModuleCfg implements ISSOModuleCfg {
         __tokenStorageAdapter = ClassUtils.impl(_moduleCfgs.get("storage_adapter_class"), ISSOTokenStorageAdapter.class, getClass());
         if (!__isClientMode && __tokenStorageAdapter == null) {
             throw new IllegalArgumentException("The parameter storage_adapter_class is invalid");
+        }
+        //
+        if (!__isClientMode) {
+            __tokenAttributeAdapter = ClassUtils.impl(_moduleCfgs.get("attribute_adapter_class"), ISSOTokenAttributeAdapter.class, getClass());
         }
     }
 
@@ -146,5 +149,9 @@ public class DefaultModuleCfg implements ISSOModuleCfg {
 
     public ISSOTokenStorageAdapter getTokenStorageAdapter() {
         return __tokenStorageAdapter;
+    }
+
+    public ISSOTokenAttributeAdapter getTokenAttributeAdapter() {
+        return __tokenAttributeAdapter;
     }
 }

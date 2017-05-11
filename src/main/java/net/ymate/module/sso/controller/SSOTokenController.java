@@ -21,6 +21,7 @@ import net.ymate.framework.core.util.WebUtils;
 import net.ymate.framework.webmvc.ErrorCode;
 import net.ymate.framework.webmvc.WebResult;
 import net.ymate.module.sso.ISSOToken;
+import net.ymate.module.sso.ISSOTokenAttributeAdapter;
 import net.ymate.module.sso.ISSOTokenStorageAdapter;
 import net.ymate.module.sso.SSO;
 import net.ymate.platform.core.util.ExpressionUtils;
@@ -115,7 +116,16 @@ public class SSOTokenController {
                         _storageAdapter.remove(_token.getUid(), _token.getId());
                         return WebResult.CODE(ErrorCode.USER_SESSION_INVALID_OR_TIMEOUT).toJSON();
                     } else {
-                        return WebResult.SUCCESS().toJSON();
+                        WebResult _result = WebResult.SUCCESS();
+                        // 尝试加载令牌自定义属性
+                        ISSOTokenAttributeAdapter _attributeAdapter = SSO.get().getModuleCfg().getTokenAttributeAdapter();
+                        if (_attributeAdapter != null) {
+                            _attributeAdapter.loadAttributes(_token);
+                            if (!_token.getAttributes().isEmpty()) {
+                                _result.data(_token.getAttributes());
+                            }
+                        }
+                        return _result.toJSON();
                     }
                 }
             }

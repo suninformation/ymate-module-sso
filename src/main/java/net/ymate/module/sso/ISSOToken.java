@@ -18,6 +18,7 @@ package net.ymate.module.sso;
 import net.ymate.framework.webmvc.support.UserSessionBean;
 
 import java.io.Serializable;
+import java.util.Map;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 17/1/1 上午2:38
@@ -49,6 +50,24 @@ public interface ISSOToken extends Serializable {
      * @return 令牌创建时间
      */
     long getCreateTime();
+
+    /**
+     * @param name 属性名称
+     * @return 获取指定名称的属性值
+     */
+    String getAttribute(String name);
+
+    /**
+     * @param name  属性名称
+     * @param value 属性值
+     * @return 添加属性并返回当前当前令牌对象
+     */
+    ISSOToken addAttribute(String name, String value);
+
+    /**
+     * @return 获取属性映射
+     */
+    Map<String, String> getAttributes();
 
     /**
      * @return 验证令牌数据有效性

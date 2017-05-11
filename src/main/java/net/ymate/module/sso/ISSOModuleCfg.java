@@ -85,4 +85,9 @@ public interface ISSOModuleCfg {
      * @return 返回令牌存储适配器接口实现
      */
     ISSOTokenStorageAdapter getTokenStorageAdapter();
+
+    /**
+     * @return 返回令牌自定义属性加载适配器接口实现
+     */
+    ISSOTokenAttributeAdapter getTokenAttributeAdapter();
 }

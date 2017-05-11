@@ -46,8 +46,11 @@
     # 令牌分析适配器接口实现, 默认值: net.ymate.module.sso.impl.DefaultSSOTokenAdapter
     ymp.configs.module.sso.token_adapter_class=
     
-    # 令牌存储适配器接口实现, 必选参数, 默认值: 空
+    # 令牌存储适配器接口实现, 非客户端模式时必选参数, 默认值: 空
     ymp.configs.module.sso.storage_adapter_class=
+    
+    # 用户自定义属性加载适配器接口实现, 非客户端模式时有效, 默认值: 空
+    ymp.configs.module.sso.attribute_adapter_class=
     
     # 与UserSessionBean整合时, 必须设置此参数
     ymp.params.webmvc.user_session_handler_class=net.ymate.module.sso.support.SSOUserSessionHandler
