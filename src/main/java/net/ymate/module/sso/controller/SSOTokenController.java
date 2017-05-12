@@ -20,10 +20,13 @@ import net.ymate.framework.core.Optional;
 import net.ymate.framework.core.util.WebUtils;
 import net.ymate.framework.webmvc.ErrorCode;
 import net.ymate.framework.webmvc.WebResult;
+import net.ymate.framework.webmvc.intercept.UserSessionStatusInterceptor;
+import net.ymate.framework.webmvc.support.UserSessionBean;
 import net.ymate.module.sso.ISSOToken;
 import net.ymate.module.sso.ISSOTokenAttributeAdapter;
 import net.ymate.module.sso.ISSOTokenStorageAdapter;
 import net.ymate.module.sso.SSO;
+import net.ymate.platform.core.beans.annotation.Before;
 import net.ymate.platform.core.util.ExpressionUtils;
 import net.ymate.platform.webmvc.annotation.Controller;
 import net.ymate.platform.webmvc.annotation.RequestMapping;
@@ -56,9 +59,13 @@ public class SSOTokenController {
      * @throws Exception 可能产生的任何异常
      */
     @RequestMapping("/authorize")
+    @Before(UserSessionStatusInterceptor.class)
     public IView __toAuthorize(@RequestParam(Optional.REDIRECT_URL) String redirectUrl) throws Exception {
         if (StringUtils.isBlank(redirectUrl) || StringUtils.contains(redirectUrl, "/sso/authorize")) {
             return HttpStatusView.METHOD_NOT_ALLOWED;
+        }
+        if (UserSessionBean.current() != null) {
+            return View.redirectView(redirectUrl);
         }
         //
         if (SSO.get().getModuleCfg().isClientMode()) {
