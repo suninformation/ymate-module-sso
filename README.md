@@ -1,6 +1,13 @@
-### SSO (Single Sign-On)
+### YMP-SSO (Single Sign-On)
 
-基于YMP框架实现的单点登录服务模块；
+> 单点登录服务模块，特性如下：
+> 
+> - 仅一个拦截器搞定单点登录；
+> - 支持Cookies、请求头或请求参数临时存储授权令牌；
+> - 支持服务端和客户端两种模式；
+> - 支持多种跨域身份验证方式；
+> - 支持通过Ajax调用RESTFul API接口的身份验证；
+> - 支持授权令牌加解密；
 
 #### Maven包依赖
 
@@ -10,7 +17,7 @@
         <version>1.0-SNAPSHOT</version>
     </dependency>
 
-### 模块配置参数说明
+#### 模块配置参数说明
 
     #-------------------------------------
     # module.sso 模块初始化参数
@@ -54,6 +61,39 @@
     
     # 与UserSessionBean整合时, 必须设置此参数
     ymp.params.webmvc.user_session_handler_class=net.ymate.module.sso.support.SSOUserSessionHandler
+
+#### 示例代码：
+
+- 配置用户会话检查拦截器，该拦截器已集成单点登录相关处理逻辑：
+
+        @RequestMapping(value = "/user/profile/edit", method = Type.HttpMethod.POST)
+        @Before(UserSessionCheckInterceptor.class)
+        public IView __doEditUserProfile(@RequestParam String nickName, ......) throws Exception {
+            // ...... 省略
+            return WebResult.SUCCESS().toJSON();
+        }
+
+- 通过代码操作用户的登录授权令牌对象：
+
+        ISSOToken _token = SSO.get().currentToken();
+        if (_token == null) {
+            // 若返回值为空则表示令牌对象不存在，创建令牌需要传入用户唯一标识Id
+            _token = SSO.get().createToken("uid_xxx");
+        }
+        if (_token != null) {
+            // 令牌唯一标识Id
+            _token.getId();
+            // 用户唯一标识Id
+            _token.getUid();
+            // 用户IP地址
+            _token.getRemoteAddr();
+            // 用户代理信息
+            _token.getUserAgent();
+            // 令牌对象创建时间
+            _token.getCreateTime();
+            // 令牌扩展属性
+            _token.getAttributes();
+        }
 
 #### One More Thing
 
