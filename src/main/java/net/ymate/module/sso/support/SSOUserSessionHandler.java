@@ -52,9 +52,9 @@ public class SSOUserSessionHandler implements IUserSessionHandler {
         if (_token == null || !_token.verified()) {
             // 若令牌为空则执行一次令牌清理(不论效果如何)
             _tokenAdapter.cleanToken();
-        } else {
+        } else if (_token.validationRequired()) {
             if (__doValidateToken(_token)) {
-                return _token.bindUserSessionBean();
+                return _token.updateLastValidateTime().bindUserSessionBean();
             }
             _tokenAdapter.cleanToken();
         }

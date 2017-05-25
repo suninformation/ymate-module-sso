@@ -47,6 +47,11 @@ public interface ISSOToken extends Serializable {
     String getUserAgent();
 
     /**
+     * @return 上一次验证时间
+     */
+    long getLastValidateTime();
+
+    /**
      * @return 令牌创建时间
      */
     long getCreateTime();
@@ -64,6 +69,8 @@ public interface ISSOToken extends Serializable {
      */
     ISSOToken addAttribute(String name, String value);
 
+    boolean hasAttribute(String name);
+
     /**
      * @return 获取属性映射
      */
@@ -78,6 +85,16 @@ public interface ISSOToken extends Serializable {
      * @return 检查是否已过期
      */
     boolean timeout();
+
+    /**
+     * @return 是否需要执行令牌有效性验证
+     */
+    boolean validationRequired();
+
+    /**
+     * 更新验证时间
+     */
+    ISSOToken updateLastValidateTime();
 
     /**
      * @return 将当前令牌与用户会话绑定，若会话不存在则创建之

@@ -37,6 +37,8 @@ public class DefaultModuleCfg implements ISSOModuleCfg {
 
     private int __tokenMaxage;
 
+    private int __tokenValidateTimeInterval;
+
     private String __cacheNamePrefix;
 
     private boolean __multiSessionEnabled;
@@ -65,6 +67,8 @@ public class DefaultModuleCfg implements ISSOModuleCfg {
         __tokenParamName = StringUtils.defaultIfBlank(_moduleCfgs.get("token_param_name"), "token");
         //
         __tokenMaxage = BlurObject.bind(_moduleCfgs.get("token_maxage")).toIntValue();
+        //
+        __tokenValidateTimeInterval = BlurObject.bind(_moduleCfgs.get("token_validate_time_interval")).toIntValue();
         //
         __cacheNamePrefix = StringUtils.trimToEmpty(_moduleCfgs.get("cache_name_prefix"));
         //
@@ -117,6 +121,10 @@ public class DefaultModuleCfg implements ISSOModuleCfg {
 
     public int getTokenMaxage() {
         return __tokenMaxage;
+    }
+
+    public int getTokenValidateTimeInterval() {
+        return __tokenValidateTimeInterval;
     }
 
     public String getCacheNamePrefix() {

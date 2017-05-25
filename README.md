@@ -35,6 +35,9 @@
     # 令牌生命周期(秒), 默认值为0, 小于等于0表示不启用
     ymp.configs.module.sso.token_maxage=
     
+    # 令牌有效性验证的时间间隔(秒), 默认值: 0
+    ymp.configs.module.sso.token_validate_time_interval=
+    
     # 开启多会话模式(即同一账号允许多处登录), 默认值: false
     ymp.configs.module.sso.multi_session_enabled=
     

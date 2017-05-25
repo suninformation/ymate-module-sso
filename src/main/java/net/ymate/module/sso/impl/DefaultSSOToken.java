@@ -41,6 +41,8 @@ public class DefaultSSOToken implements ISSOToken {
 
     private String userAgent;
 
+    private long lastValidateTime;
+
     private long createTime;
 
     private Map<String, String> __attributes;
@@ -93,6 +95,14 @@ public class DefaultSSOToken implements ISSOToken {
         return userAgent;
     }
 
+    public long getLastValidateTime() {
+        return lastValidateTime;
+    }
+
+    public void setLastValidateTime(long lastValidateTime) {
+        this.lastValidateTime = lastValidateTime;
+    }
+
     public void setUserAgent(String userAgent) {
         this.userAgent = userAgent;
     }
@@ -139,6 +149,16 @@ public class DefaultSSOToken implements ISSOToken {
     public boolean timeout() {
         int _maxage = SSO.get().getModuleCfg().getTokenMaxage();
         return _maxage > 0 && System.currentTimeMillis() - this.createTime > _maxage * DateTimeUtils.SECOND;
+    }
+
+    public boolean validationRequired() {
+        int _timeInterval = SSO.get().getModuleCfg().getTokenValidateTimeInterval();
+        return _timeInterval <= 0 || System.currentTimeMillis() - this.lastValidateTime > _timeInterval * DateTimeUtils.SECOND;
+    }
+
+    public ISSOToken updateLastValidateTime() {
+        lastValidateTime = System.currentTimeMillis();
+        return this;
     }
 
     public UserSessionBean bindUserSessionBean() {

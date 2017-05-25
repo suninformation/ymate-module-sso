@@ -42,6 +42,11 @@ public interface ISSOModuleCfg {
     int getTokenMaxage();
 
     /**
+     * @return 令牌有效性验证的时间间隔(秒), 默认值: 0
+     */
+    int getTokenValidateTimeInterval();
+
+    /**
      * @return 缓存名称前缀, 默认值: ""
      */
     String getCacheNamePrefix();
