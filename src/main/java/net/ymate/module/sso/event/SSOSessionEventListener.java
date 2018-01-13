@@ -42,8 +42,10 @@ public class SSOSessionEventListener implements IEventRegister {
 
     private static final Log _LOG = LogFactory.getLog(SSOSessionEventListener.class);
 
+    @Override
     public void register(Events events) throws Exception {
         events.registerListener(Events.MODE.NORMAL, WebEvent.class, new IEventListener<WebEvent>() {
+            @Override
             public boolean handle(WebEvent context) {
                 switch (context.getEventName()) {
                     case SESSION_DESTROYED:
@@ -59,6 +61,8 @@ public class SSOSessionEventListener implements IEventRegister {
                                 }
                             }
                         }
+                        break;
+                    default:
                         break;
                 }
                 return false;

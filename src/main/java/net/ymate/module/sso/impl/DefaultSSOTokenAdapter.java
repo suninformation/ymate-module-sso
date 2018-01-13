@@ -20,10 +20,13 @@ import net.ymate.module.sso.ISSO;
 import net.ymate.module.sso.ISSOToken;
 import net.ymate.module.sso.ISSOTokenAdapter;
 import net.ymate.platform.core.lang.BlurObject;
+import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.core.util.UUIDUtils;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.util.CookieHelper;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 17/1/1 上午3:52
@@ -31,20 +34,26 @@ import org.apache.commons.lang.StringUtils;
  */
 public class DefaultSSOTokenAdapter implements ISSOTokenAdapter {
 
+    private static final Log _LOG = LogFactory.getLog(DefaultSSOTokenAdapter.class);
+
     private ISSO __owner;
 
+    @Override
     public void init(ISSO owner) throws Exception {
         __owner = owner;
     }
 
+    @Override
     public void destroy() throws Exception {
         __owner = null;
     }
 
+    @Override
     public String generateTokenKey() {
         return UUIDUtils.UUID();
     }
 
+    @Override
     public ISSOToken getToken() {
         ISSOToken _token = null;
         try {
@@ -62,11 +71,13 @@ public class DefaultSSOTokenAdapter implements ISSOTokenAdapter {
                     _token = decryptToken(WebContext.getRequest().getParameter(__owner.getModuleCfg().getTokenParamName()));
                 }
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            _LOG.warn("An exception occurred while getting token for current user", RuntimeUtils.unwrapThrow(e));
         }
         return _token;
     }
 
+    @Override
     public void setToken(ISSOToken token) throws Exception {
         CookieHelper _cookieHelper = CookieHelper.bind(WebContext.getContext().getOwner());
         String _tokenStr = encryptToken(token);
@@ -79,14 +90,17 @@ public class DefaultSSOTokenAdapter implements ISSOTokenAdapter {
         }
     }
 
+    @Override
     public void cleanToken() {
         CookieHelper.bind(WebContext.getContext().getOwner()).removeCookie(__owner.getModuleCfg().getTokenCookieName());
     }
 
+    @Override
     public String encryptToken(ISSOToken token) throws Exception {
         return WebUtils.encryptStr(token.getUid() + "|" + token.getCreateTime(), WebContext.getRequest().getHeader("User-Agent"));
     }
 
+    @Override
     public ISSOToken decryptToken(String tokenSeriStr) throws Exception {
         if (StringUtils.isNotBlank(tokenSeriStr)) {
             String _userAgent = WebContext.getRequest().getHeader("User-Agent");

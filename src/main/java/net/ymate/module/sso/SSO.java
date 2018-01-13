@@ -55,10 +55,12 @@ public class SSO implements IModule, ISSO {
         return __instance;
     }
 
+    @Override
     public String getName() {
         return ISSO.MODULE_NAME;
     }
 
+    @Override
     public void init(YMP owner) throws Exception {
         if (!__inited) {
             //
@@ -68,7 +70,7 @@ public class SSO implements IModule, ISSO {
             __moduleCfg = new DefaultModuleCfg(owner);
             //
             __moduleCfg.getTokenAdapter().init(this);
-            if (__moduleCfg.getTokenStorageAdapter() != null) {
+            if (!__moduleCfg.isClientMode() && __moduleCfg.getTokenStorageAdapter() != null) {
                 __moduleCfg.getTokenStorageAdapter().init(this);
             }
             //
@@ -76,16 +78,18 @@ public class SSO implements IModule, ISSO {
         }
     }
 
+    @Override
     public boolean isInited() {
         return __inited;
     }
 
+    @Override
     public void destroy() throws Exception {
         if (__inited) {
             __inited = false;
             //
             __moduleCfg.getTokenAdapter().destroy();
-            if (__moduleCfg.getTokenStorageAdapter() != null) {
+            if (!__moduleCfg.isClientMode() && __moduleCfg.getTokenStorageAdapter() != null) {
                 __moduleCfg.getTokenStorageAdapter().destroy();
             }
             //
@@ -94,14 +98,17 @@ public class SSO implements IModule, ISSO {
         }
     }
 
+    @Override
     public YMP getOwner() {
         return __owner;
     }
 
+    @Override
     public ISSOModuleCfg getModuleCfg() {
         return __moduleCfg;
     }
 
+    @Override
     public ISSOToken currentToken() {
         UserSessionBean _sessionBean = UserSessionBean.current();
         if (_sessionBean != null) {
@@ -110,6 +117,7 @@ public class SSO implements IModule, ISSO {
         return null;
     }
 
+    @Override
     public ISSOToken createToken(String uid) throws Exception {
         ISSOToken _token = new DefaultSSOToken(uid).build();
         //

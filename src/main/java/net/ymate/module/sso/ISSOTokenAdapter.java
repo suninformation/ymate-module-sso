@@ -15,21 +15,13 @@
  */
 package net.ymate.module.sso;
 
+import net.ymate.platform.core.support.IInitializable;
+
 /**
  * @author 刘镇 (suninformation@163.com) on 17/1/1 上午2:57
  * @version 1.0
  */
-public interface ISSOTokenAdapter {
-
-    /**
-     * 初始化令牌适配器
-     *
-     * @param owner 所属模块管理器实例
-     * @throws Exception 可能产生的任何异常
-     */
-    void init(ISSO owner) throws Exception;
-
-    void destroy() throws Exception;
+public interface ISSOTokenAdapter extends IInitializable<ISSO> {
 
     /**
      * @return 生成令牌唯一标识KEY

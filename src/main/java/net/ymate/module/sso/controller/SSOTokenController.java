@@ -28,6 +28,7 @@ import net.ymate.module.sso.ISSOTokenStorageAdapter;
 import net.ymate.module.sso.SSO;
 import net.ymate.platform.core.beans.annotation.Before;
 import net.ymate.platform.core.util.ExpressionUtils;
+import net.ymate.platform.validation.validate.VRequired;
 import net.ymate.platform.webmvc.annotation.Controller;
 import net.ymate.platform.webmvc.annotation.RequestMapping;
 import net.ymate.platform.webmvc.annotation.RequestParam;
@@ -97,43 +98,41 @@ public class SSOTokenController {
      * @throws Exception 可能产生的任何异常
      */
     @RequestMapping(value = "/authorize", method = Type.HttpMethod.POST)
-    public IView __doAuthorize(@RequestParam("token_id") String tokenId,
-                               @RequestParam String uid,
-                               @RequestParam("remote_addr") String remoteAddr,
-                               @RequestParam String sign) throws Exception {
+    public IView __doAuthorize(@VRequired @RequestParam("token_id") String tokenId,
+                               @VRequired @RequestParam String uid,
+                               @VRequired @RequestParam("remote_addr") String remoteAddr,
+                               @VRequired @RequestParam String sign) throws Exception {
 
         if (SSO.get().getModuleCfg().isClientMode()) {
             return HttpStatusView.METHOD_NOT_ALLOWED;
         }
         //
-        if (StringUtils.isNotBlank(tokenId) && StringUtils.isNotBlank(uid) && StringUtils.isNotBlank(remoteAddr) && StringUtils.isNotBlank(sign)) {
-            Map<String, String> _params = new HashMap<String, String>();
-            _params.put("token_id", tokenId);
-            _params.put("uid", uid);
-            _params.put("remote_addr", remoteAddr);
-            //
-            String _sign = ParamUtils.createSignature(_params, false, SSO.get().getModuleCfg().getServiceAuthKey());
-            if (StringUtils.equals(sign, _sign)) {
-                ISSOTokenStorageAdapter _storageAdapter = SSO.get().getModuleCfg().getTokenStorageAdapter();
-                // 尝试从存储中加载原始令牌数据并进行有效性验证
-                ISSOToken _token = _storageAdapter.load(uid, tokenId);
-                if (_token != null) {
-                    boolean _ipCheck = (SSO.get().getModuleCfg().isIpCheckEnabled() && !StringUtils.equals(remoteAddr, _token.getRemoteAddr()));
-                    if (_token.timeout() || !_token.verified() || _ipCheck) {
-                        _storageAdapter.remove(_token.getUid(), _token.getId());
-                        return WebResult.CODE(ErrorCode.USER_SESSION_INVALID_OR_TIMEOUT).toJSON();
-                    } else {
-                        WebResult _result = WebResult.SUCCESS();
-                        // 尝试加载令牌自定义属性
-                        ISSOTokenAttributeAdapter _attributeAdapter = SSO.get().getModuleCfg().getTokenAttributeAdapter();
-                        if (_attributeAdapter != null) {
-                            _attributeAdapter.loadAttributes(_token);
-                            if (!_token.getAttributes().isEmpty()) {
-                                _result.data(_token.getAttributes());
-                            }
+        Map<String, String> _params = new HashMap<String, String>();
+        _params.put("token_id", tokenId);
+        _params.put("uid", uid);
+        _params.put("remote_addr", remoteAddr);
+        //
+        String _sign = ParamUtils.createSignature(_params, false, SSO.get().getModuleCfg().getServiceAuthKey());
+        if (StringUtils.equals(sign, _sign)) {
+            ISSOTokenStorageAdapter _storageAdapter = SSO.get().getModuleCfg().getTokenStorageAdapter();
+            // 尝试从存储中加载原始令牌数据并进行有效性验证
+            ISSOToken _token = _storageAdapter.load(uid, tokenId);
+            if (_token != null) {
+                boolean _ipCheck = (SSO.get().getModuleCfg().isIpCheckEnabled() && !StringUtils.equals(remoteAddr, _token.getRemoteAddr()));
+                if (_token.timeout() || !_token.verified() || _ipCheck) {
+                    _storageAdapter.remove(_token.getUid(), _token.getId());
+                    return WebResult.CODE(ErrorCode.USER_SESSION_INVALID_OR_TIMEOUT).toJSON();
+                } else {
+                    WebResult _result = WebResult.SUCCESS();
+                    // 尝试加载令牌自定义属性
+                    ISSOTokenAttributeAdapter _attributeAdapter = SSO.get().getModuleCfg().getTokenAttributeAdapter();
+                    if (_attributeAdapter != null) {
+                        _attributeAdapter.loadAttributes(_token);
+                        if (!_token.getAttributes().isEmpty()) {
+                            _result.data(_token.getAttributes());
                         }
-                        return _result.toJSON();
                     }
+                    return _result.toJSON();
                 }
             }
         }

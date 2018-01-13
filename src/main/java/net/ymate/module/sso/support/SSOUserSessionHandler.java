@@ -45,6 +45,7 @@ public class SSOUserSessionHandler implements IUserSessionHandler {
 
     private static final Log _LOG = LogFactory.getLog(SSOUserSessionHandler.class);
 
+    @Override
     public UserSessionBean handle(InterceptContext context) throws Exception {
         ISSOTokenAdapter _tokenAdapter = SSO.get().getModuleCfg().getTokenAdapter();
         // 执行至此，表示UserSessionBean不存在，尝试从Cookies中获取令牌信息
@@ -110,6 +111,7 @@ public class SSOUserSessionHandler implements IUserSessionHandler {
         return false;
     }
 
+    @Override
     public boolean verification(UserSessionBean sessionBean) {
         ISSOToken _token = sessionBean.getAttribute(ISSOToken.class.getName());
         if (_token != null) {

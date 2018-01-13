@@ -92,7 +92,7 @@ public interface ISSOToken extends Serializable {
     boolean validationRequired();
 
     /**
-     * 更新验证时间
+     * @return 更新验证时间并返回当前令牌对象本身
      */
     ISSOToken updateLastValidateTime();
 

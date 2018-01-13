@@ -107,58 +107,72 @@ public class DefaultModuleCfg implements ISSOModuleCfg {
         }
     }
 
+    @Override
     public String getTokenCookieName() {
         return __tokenCookieName;
     }
 
+    @Override
     public String getTokenHeaderName() {
         return __tokenHeaderName;
     }
 
+    @Override
     public String getTokenParamName() {
         return __tokenParamName;
     }
 
+    @Override
     public int getTokenMaxage() {
         return __tokenMaxage;
     }
 
+    @Override
     public int getTokenValidateTimeInterval() {
         return __tokenValidateTimeInterval;
     }
 
+    @Override
     public String getCacheNamePrefix() {
         return __cacheNamePrefix;
     }
 
+    @Override
     public boolean isMultiSessionEnabled() {
         return __multiSessionEnabled;
     }
 
+    @Override
     public boolean isIpCheckEnabled() {
         return __ipCheckEnabled;
     }
 
+    @Override
     public boolean isClientMode() {
         return __isClientMode;
     }
 
+    @Override
     public String getServiceBaseUrl() {
         return __serviceBaseUrl;
     }
 
+    @Override
     public String getServiceAuthKey() {
         return __serviceAuthKey;
     }
 
+    @Override
     public ISSOTokenAdapter getTokenAdapter() {
         return __tokenApater;
     }
 
+    @Override
     public ISSOTokenStorageAdapter getTokenStorageAdapter() {
         return __tokenStorageAdapter;
     }
 
+    @Override
     public ISSOTokenAttributeAdapter getTokenAttributeAdapter() {
         return __tokenAttributeAdapter;
     }

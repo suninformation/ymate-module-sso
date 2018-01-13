@@ -67,6 +67,7 @@ public class DefaultSSOToken implements ISSOToken {
         this.createTime = createTime > 0 ? createTime : System.currentTimeMillis();
     }
 
+    @Override
     public String getId() {
         return id;
     }
@@ -75,6 +76,7 @@ public class DefaultSSOToken implements ISSOToken {
         this.id = id;
     }
 
+    @Override
     public String getUid() {
         return uid;
     }
@@ -83,6 +85,7 @@ public class DefaultSSOToken implements ISSOToken {
         this.uid = uid;
     }
 
+    @Override
     public String getRemoteAddr() {
         return remoteAddr;
     }
@@ -91,10 +94,16 @@ public class DefaultSSOToken implements ISSOToken {
         this.remoteAddr = remoteAddr;
     }
 
+    @Override
     public String getUserAgent() {
         return userAgent;
     }
 
+    public void setUserAgent(String userAgent) {
+        this.userAgent = userAgent;
+    }
+
+    @Override
     public long getLastValidateTime() {
         return lastValidateTime;
     }
@@ -103,10 +112,7 @@ public class DefaultSSOToken implements ISSOToken {
         this.lastValidateTime = lastValidateTime;
     }
 
-    public void setUserAgent(String userAgent) {
-        this.userAgent = userAgent;
-    }
-
+    @Override
     public long getCreateTime() {
         return createTime;
     }
@@ -115,19 +121,23 @@ public class DefaultSSOToken implements ISSOToken {
         this.createTime = createTime;
     }
 
+    @Override
     public boolean hasAttribute(String name) {
         return __attributes.containsKey(name);
     }
 
+    @Override
     public String getAttribute(String name) {
         return __attributes.get(name);
     }
 
+    @Override
     public ISSOToken addAttribute(String name, String value) {
         __attributes.put(name, value);
         return this;
     }
 
+    @Override
     public Map<String, String> getAttributes() {
         return __attributes;
     }
@@ -141,26 +151,31 @@ public class DefaultSSOToken implements ISSOToken {
         return DigestUtils.md5Hex(uid + userAgent + WebContext.getContext().getOwner().getModuleCfg().getCookieAuthKey());
     }
 
+    @Override
     public boolean verified() {
         // 验证客户端与服务端令牌签名是否匹配
         return StringUtils.equals(id, __doCreateSignature());
     }
 
+    @Override
     public boolean timeout() {
         int _maxage = SSO.get().getModuleCfg().getTokenMaxage();
         return _maxage > 0 && System.currentTimeMillis() - this.createTime > _maxage * DateTimeUtils.SECOND;
     }
 
+    @Override
     public boolean validationRequired() {
         int _timeInterval = SSO.get().getModuleCfg().getTokenValidateTimeInterval();
         return _timeInterval <= 0 || System.currentTimeMillis() - this.lastValidateTime > _timeInterval * DateTimeUtils.SECOND;
     }
 
+    @Override
     public ISSOToken updateLastValidateTime() {
         lastValidateTime = System.currentTimeMillis();
         return this;
     }
 
+    @Override
     public UserSessionBean bindUserSessionBean() {
         return UserSessionBean
                 .createIfNeed(WebContext.getRequest().getSession().getId()).reset()

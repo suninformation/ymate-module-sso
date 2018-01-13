@@ -22,7 +22,9 @@ package net.ymate.module.sso;
 public interface ISSOTokenAttributeAdapter {
 
     /**
-     * 执行加载用户自定义属性数据token 令牌对象
+     * 执行加载用户自定义属性数据
+     *
+     * @param token 令牌对象
      */
     void loadAttributes(ISSOToken token);
 }
