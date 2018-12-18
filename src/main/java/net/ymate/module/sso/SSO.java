@@ -16,7 +16,7 @@
 package net.ymate.module.sso;
 
 import net.ymate.framework.webmvc.support.UserSessionBean;
-import net.ymate.module.sso.impl.DefaultModuleCfg;
+import net.ymate.module.sso.impl.DefaultSSOModuleCfg;
 import net.ymate.module.sso.impl.DefaultSSOToken;
 import net.ymate.platform.core.Version;
 import net.ymate.platform.core.YMP;
@@ -34,7 +34,7 @@ public class SSO implements IModule, ISSO {
 
     private static final Log _LOG = LogFactory.getLog(SSO.class);
 
-    public static final Version VERSION = new Version(1, 0, 0, SSO.class.getPackage().getImplementationVersion(), Version.VersionType.Alphal);
+    public static final Version VERSION = new Version(1, 0, 0, SSO.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
 
     private static volatile ISSO __instance;
 
@@ -67,7 +67,7 @@ public class SSO implements IModule, ISSO {
             _LOG.info("Initializing ymate-module-sso-" + VERSION);
             //
             __owner = owner;
-            __moduleCfg = new DefaultModuleCfg(owner);
+            __moduleCfg = new DefaultSSOModuleCfg(owner);
             //
             __moduleCfg.getTokenAdapter().init(this);
             if (!__moduleCfg.isClientMode() && __moduleCfg.getTokenStorageAdapter() != null) {

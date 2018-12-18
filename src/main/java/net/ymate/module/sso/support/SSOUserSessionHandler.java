@@ -20,7 +20,6 @@ import com.alibaba.fastjson.JSONObject;
 import net.ymate.framework.commons.HttpClientHelper;
 import net.ymate.framework.commons.IHttpResponse;
 import net.ymate.framework.commons.ParamUtils;
-import net.ymate.framework.webmvc.ErrorCode;
 import net.ymate.framework.webmvc.IUserSessionHandler;
 import net.ymate.framework.webmvc.support.UserSessionBean;
 import net.ymate.module.sso.*;
@@ -28,12 +27,14 @@ import net.ymate.platform.core.beans.intercept.InterceptContext;
 import net.ymate.platform.core.lang.BlurObject;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.webmvc.context.WebContext;
+import net.ymate.platform.webmvc.util.ErrorCode;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.Header;
 import org.apache.http.message.BasicHeader;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -71,9 +72,9 @@ public class SSOUserSessionHandler implements IUserSessionHandler {
                 _params.put("remote_addr", token.getRemoteAddr());
                 _params.put("sign", ParamUtils.createSignature(_params, false, SSO.get().getModuleCfg().getServiceAuthKey()));
                 IHttpResponse _result = HttpClientHelper.create().post(SSO.get().getModuleCfg().getServiceBaseUrl().concat("sso/authorize"), _params, new Header[]{new BasicHeader("User-Agent", WebContext.getRequest().getHeader("User-Agent"))});
-                if (_result != null && _result.getStatusCode() == 200) {
+                if (_result != null && _result.getStatusCode() == HttpServletResponse.SC_OK) {
                     JSONObject _resultObj = JSON.parseObject(_result.getContent());
-                    if (_resultObj.getIntValue("ret") == ErrorCode.SUCCESSED) {
+                    if (_resultObj.getIntValue("ret") == ErrorCode.SUCCEED) {
                         // 令牌验证通过，则进行本地Cookie存储
                         SSO.get().getModuleCfg().getTokenAdapter().setToken(token);
                         // 尝试从响应报文中提取并追加token属性数据

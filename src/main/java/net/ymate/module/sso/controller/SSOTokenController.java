@@ -17,9 +17,6 @@ package net.ymate.module.sso.controller;
 
 import net.ymate.framework.commons.ParamUtils;
 import net.ymate.framework.core.Optional;
-import net.ymate.framework.core.util.WebUtils;
-import net.ymate.framework.webmvc.ErrorCode;
-import net.ymate.framework.webmvc.WebResult;
 import net.ymate.framework.webmvc.intercept.UserSessionStatusInterceptor;
 import net.ymate.framework.webmvc.support.UserSessionBean;
 import net.ymate.module.sso.ISSOToken;
@@ -34,6 +31,9 @@ import net.ymate.platform.webmvc.annotation.RequestMapping;
 import net.ymate.platform.webmvc.annotation.RequestParam;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
+import net.ymate.platform.webmvc.util.ErrorCode;
+import net.ymate.platform.webmvc.util.WebResult;
+import net.ymate.platform.webmvc.util.WebUtils;
 import net.ymate.platform.webmvc.view.IView;
 import net.ymate.platform.webmvc.view.View;
 import net.ymate.platform.webmvc.view.impl.HttpStatusView;
@@ -61,7 +61,7 @@ public class SSOTokenController {
      */
     @RequestMapping("/authorize")
     @Before(UserSessionStatusInterceptor.class)
-    public IView __toAuthorize(@RequestParam(Optional.REDIRECT_URL) String redirectUrl) throws Exception {
+    public IView __toAuthorize(@RequestParam(Type.Const.REDIRECT_URL) String redirectUrl) throws Exception {
         if (StringUtils.isBlank(redirectUrl) || StringUtils.contains(redirectUrl, "/sso/authorize")) {
             return HttpStatusView.METHOD_NOT_ALLOWED;
         }
@@ -71,7 +71,7 @@ public class SSOTokenController {
         //
         if (SSO.get().getModuleCfg().isClientMode()) {
             Map<String, String> _params = new HashMap<String, String>();
-            _params.put(Optional.REDIRECT_URL, redirectUrl);
+            _params.put(Type.Const.REDIRECT_URL, redirectUrl);
             // 当客户端访问该控制器方法时，将请求重定向至服务端
             return View.redirectView(ParamUtils.appendQueryParamValue(SSO.get().getModuleCfg().getServiceBaseUrl().concat("sso/authorize"), _params, true, WebContext.getContext().getOwner().getModuleCfg().getDefaultCharsetEncoding()));
         }
@@ -84,8 +84,8 @@ public class SSOTokenController {
             return View.redirectView(ParamUtils.appendQueryParamValue(redirectUrl, _params, true, WebContext.getContext().getOwner().getModuleCfg().getDefaultCharsetEncoding()));
         }
         // 当前服务端用户尚未登录，则重定向登录视图
-        String _redirectUrl = WebUtils.buildRedirectURL(null, StringUtils.defaultIfBlank(WebContext.getContext().getOwner().getOwner().getConfig().getParam(Optional.REDIRECT_LOGIN_URL), "login?redirect_url=${redirect_url}"), true);
-        _redirectUrl = ExpressionUtils.bind(_redirectUrl).set(Optional.REDIRECT_URL, WebUtils.encodeURL(redirectUrl)).getResult();
+        String _redirectUrl = WebUtils.buildRedirectURL(null, WebContext.getRequest(), StringUtils.defaultIfBlank(WebContext.getContext().getOwner().getOwner().getConfig().getParam(Optional.REDIRECT_LOGIN_URL), "login?redirect_url=${redirect_url}"), true);
+        _redirectUrl = ExpressionUtils.bind(_redirectUrl).set(Type.Const.REDIRECT_URL, WebUtils.encodeURL(redirectUrl)).getResult();
         return View.redirectView(_redirectUrl);
     }
 
@@ -121,9 +121,9 @@ public class SSOTokenController {
                 boolean _ipCheck = (SSO.get().getModuleCfg().isIpCheckEnabled() && !StringUtils.equals(remoteAddr, _token.getRemoteAddr()));
                 if (_token.timeout() || !_token.verified() || _ipCheck) {
                     _storageAdapter.remove(_token.getUid(), _token.getId());
-                    return WebResult.CODE(ErrorCode.USER_SESSION_INVALID_OR_TIMEOUT).toJSON();
+                    return WebResult.create(ErrorCode.USER_SESSION_INVALID_OR_TIMEOUT).toJSON();
                 } else {
-                    WebResult _result = WebResult.SUCCESS();
+                    WebResult _result = WebResult.succeed();
                     // 尝试加载令牌自定义属性
                     ISSOTokenAttributeAdapter _attributeAdapter = SSO.get().getModuleCfg().getTokenAttributeAdapter();
                     if (_attributeAdapter != null) {
@@ -136,6 +136,6 @@ public class SSOTokenController {
                 }
             }
         }
-        return WebResult.CODE(ErrorCode.INVALID_PARAMS_VALIDATION).toJSON();
+        return WebResult.create(ErrorCode.INVALID_PARAMS_VALIDATION).toJSON();
     }
 }

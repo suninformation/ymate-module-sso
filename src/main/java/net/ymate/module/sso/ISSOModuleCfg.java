@@ -21,6 +21,34 @@ package net.ymate.module.sso;
  */
 public interface ISSOModuleCfg {
 
+    String TOKEN_COOKIE_NAME = "token_cookie_name";
+
+    String TOKEN_HEADER_NAME = "token_header_name";
+
+    String TOKEN_PARAM_NAME = "token_param_name";
+
+    String TOKEN_MAXAGE = "token_maxage";
+
+    String TOKEN_VALIDATE_TIME_INTERVAL = "token_validate_time_interval";
+
+    String CACHE_NAME_PREFIX = "cache_name_prefix";
+
+    String MULTI_SESSION_ENABLED = "multi_session_enabled";
+
+    String IP_CHECK_ENABLED = "ip_check_enabled";
+
+    String CLIENT_MODE = "client_mode";
+
+    String SERVICE_AUTH_KEY = "service_auth_key";
+
+    String SERVICE_BASE_URL = "service_base_url";
+
+    String TOKEN_ADAPTER_CLASS = "token_adapter_class";
+
+    String STORAGE_ADAPTER_CLASS = "storage_adapter_class";
+
+    String ATTRIBUTE_ADAPTER_CLASS = "attribute_adapter_class";
+
     /**
      * @return 令牌存储在Cookie中的名称, 默认为module.sso_token
      */

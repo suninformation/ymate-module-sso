@@ -15,12 +15,12 @@
  */
 package net.ymate.module.sso.impl;
 
-import net.ymate.framework.core.util.WebUtils;
 import net.ymate.framework.webmvc.support.UserSessionBean;
 import net.ymate.module.sso.ISSOToken;
 import net.ymate.module.sso.SSO;
 import net.ymate.platform.core.util.DateTimeUtils;
 import net.ymate.platform.webmvc.context.WebContext;
+import net.ymate.platform.webmvc.util.WebUtils;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang.StringUtils;
 

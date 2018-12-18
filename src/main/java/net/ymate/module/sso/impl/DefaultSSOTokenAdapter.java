@@ -15,7 +15,6 @@
  */
 package net.ymate.module.sso.impl;
 
-import net.ymate.framework.core.util.WebUtils;
 import net.ymate.module.sso.ISSO;
 import net.ymate.module.sso.ISSOToken;
 import net.ymate.module.sso.ISSOTokenAdapter;
@@ -24,6 +23,7 @@ import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.core.util.UUIDUtils;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.util.CookieHelper;
+import net.ymate.platform.webmvc.util.WebUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

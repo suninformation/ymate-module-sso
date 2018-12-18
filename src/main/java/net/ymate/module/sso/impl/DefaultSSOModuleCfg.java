@@ -17,17 +17,15 @@ package net.ymate.module.sso.impl;
 
 import net.ymate.module.sso.*;
 import net.ymate.platform.core.YMP;
-import net.ymate.platform.core.lang.BlurObject;
-import net.ymate.platform.core.util.ClassUtils;
+import net.ymate.platform.core.support.IConfigReader;
+import net.ymate.platform.core.support.impl.MapSafeConfigReader;
 import org.apache.commons.lang.StringUtils;
-
-import java.util.Map;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2017/02/26 上午 03:19
  * @version 1.0
  */
-public class DefaultModuleCfg implements ISSOModuleCfg {
+public class DefaultSSOModuleCfg implements ISSOModuleCfg {
 
     private String __tokenCookieName;
 
@@ -51,59 +49,59 @@ public class DefaultModuleCfg implements ISSOModuleCfg {
 
     private String __serviceAuthKey;
 
-    private ISSOTokenAdapter __tokenApater;
+    private ISSOTokenAdapter __tokenAdapter;
 
     private ISSOTokenStorageAdapter __tokenStorageAdapter;
 
     private ISSOTokenAttributeAdapter __tokenAttributeAdapter;
 
-    public DefaultModuleCfg(YMP owner) {
-        Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(ISSO.MODULE_NAME);
+    public DefaultSSOModuleCfg(YMP owner) {
+        IConfigReader _moduleCfg = MapSafeConfigReader.bind(owner.getConfig().getModuleConfigs(ISSO.MODULE_NAME));
         //
-        __tokenCookieName = StringUtils.defaultIfBlank(_moduleCfgs.get("token_cookie_name"), ISSO.MODULE_NAME + "_token");
+        __tokenCookieName = _moduleCfg.getString(TOKEN_COOKIE_NAME, ISSO.MODULE_NAME + "_token");
         //
-        __tokenHeaderName = StringUtils.defaultIfBlank(_moduleCfgs.get("token_header_name"), "X-ModuleSSO-Token");
+        __tokenHeaderName = _moduleCfg.getString(TOKEN_HEADER_NAME, "X-ModuleSSO-Token");
         //
-        __tokenParamName = StringUtils.defaultIfBlank(_moduleCfgs.get("token_param_name"), "token");
+        __tokenParamName = _moduleCfg.getString(TOKEN_PARAM_NAME, "token");
         //
-        __tokenMaxage = BlurObject.bind(_moduleCfgs.get("token_maxage")).toIntValue();
+        __tokenMaxage = _moduleCfg.getInt(TOKEN_MAXAGE);
         //
-        __tokenValidateTimeInterval = BlurObject.bind(_moduleCfgs.get("token_validate_time_interval")).toIntValue();
+        __tokenValidateTimeInterval = _moduleCfg.getInt(TOKEN_VALIDATE_TIME_INTERVAL);
         //
-        __cacheNamePrefix = StringUtils.trimToEmpty(_moduleCfgs.get("cache_name_prefix"));
+        __cacheNamePrefix = _moduleCfg.getString(CACHE_NAME_PREFIX);
         //
-        __multiSessionEnabled = BlurObject.bind(_moduleCfgs.get("multi_session_enabled")).toBooleanValue();
+        __multiSessionEnabled = _moduleCfg.getBoolean(MULTI_SESSION_ENABLED);
         //
-        __ipCheckEnabled = BlurObject.bind(_moduleCfgs.get("ip_check_enabled")).toBooleanValue();
+        __ipCheckEnabled = _moduleCfg.getBoolean(IP_CHECK_ENABLED);
         //
-        __isClientMode = BlurObject.bind(_moduleCfgs.get("client_mode")).toBooleanValue();
+        __isClientMode = _moduleCfg.getBoolean(CLIENT_MODE);
         //
-        __serviceAuthKey = StringUtils.trimToEmpty(_moduleCfgs.get("service_auth_key"));
+        __serviceAuthKey = _moduleCfg.getString(SERVICE_AUTH_KEY);
         //
         if (__isClientMode) {
-            __serviceBaseUrl = StringUtils.trimToNull(_moduleCfgs.get("service_base_url"));
+            __serviceBaseUrl = StringUtils.trimToNull(_moduleCfg.getString(SERVICE_BASE_URL));
             if (__serviceBaseUrl != null) {
                 if (!StringUtils.startsWithIgnoreCase(__serviceBaseUrl, "http://") &&
                         !StringUtils.startsWithIgnoreCase(__serviceBaseUrl, "https://")) {
-                    throw new IllegalArgumentException("The parameter service_base_url is invalid");
+                    throw new IllegalArgumentException("The parameter " + SERVICE_BASE_URL + " is invalid");
                 } else if (!StringUtils.endsWith(__serviceBaseUrl, "/")) {
                     __serviceBaseUrl = __serviceBaseUrl + "/";
                 }
             }
         }
         //
-        __tokenApater = ClassUtils.impl(_moduleCfgs.get("token_adapter_class"), ISSOTokenAdapter.class, getClass());
-        if (__tokenApater == null) {
-            __tokenApater = new DefaultSSOTokenAdapter();
+        __tokenAdapter = _moduleCfg.getClassImpl(TOKEN_ADAPTER_CLASS, ISSOTokenAdapter.class);
+        if (__tokenAdapter == null) {
+            __tokenAdapter = new DefaultSSOTokenAdapter();
         }
         //
-        __tokenStorageAdapter = ClassUtils.impl(_moduleCfgs.get("storage_adapter_class"), ISSOTokenStorageAdapter.class, getClass());
+        __tokenStorageAdapter = _moduleCfg.getClassImpl(STORAGE_ADAPTER_CLASS, ISSOTokenStorageAdapter.class);
         if (!__isClientMode && __tokenStorageAdapter == null) {
-            throw new IllegalArgumentException("The parameter storage_adapter_class is invalid");
+            throw new IllegalArgumentException("The parameter " + STORAGE_ADAPTER_CLASS + " is invalid");
         }
         //
         if (!__isClientMode) {
-            __tokenAttributeAdapter = ClassUtils.impl(_moduleCfgs.get("attribute_adapter_class"), ISSOTokenAttributeAdapter.class, getClass());
+            __tokenAttributeAdapter = _moduleCfg.getClassImpl(ATTRIBUTE_ADAPTER_CLASS, ISSOTokenAttributeAdapter.class);
         }
     }
 
@@ -164,7 +162,7 @@ public class DefaultModuleCfg implements ISSOModuleCfg {
 
     @Override
     public ISSOTokenAdapter getTokenAdapter() {
-        return __tokenApater;
+        return __tokenAdapter;
     }
 
     @Override
