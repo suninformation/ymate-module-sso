@@ -6,7 +6,7 @@
 
     <groupId>net.ymate.module</groupId>
     <artifactId>ymate-module-sso</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <packaging>jar</packaging>
 
     <name>ymate-module-sso</name>

@@ -14,7 +14,7 @@
     <dependency>
         <groupId>net.ymate.module</groupId>
         <artifactId>ymate-module-sso</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.1</version>
     </dependency>
 
 #### 模块配置参数说明

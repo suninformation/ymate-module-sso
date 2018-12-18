@@ -34,7 +34,7 @@ public class SSO implements IModule, ISSO {
 
     private static final Log _LOG = LogFactory.getLog(SSO.class);
 
-    public static final Version VERSION = new Version(1, 0, 0, SSO.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
+    public static final Version VERSION = new Version(1, 0, 1, SSO.class.getPackage().getImplementationVersion(), Version.VersionType.Release);
 
     private static volatile ISSO __instance;
 
