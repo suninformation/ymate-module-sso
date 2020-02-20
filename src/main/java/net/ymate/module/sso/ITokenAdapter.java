@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2017 the original author or authors.
+ * Copyright 2007-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,33 +15,45 @@
  */
 package net.ymate.module.sso;
 
-import net.ymate.platform.core.support.IInitializable;
+import net.ymate.platform.core.support.IDestroyable;
+import net.ymate.platform.core.support.IInitialization;
 
 /**
- * @author 刘镇 (suninformation@163.com) on 17/1/1 上午2:57
- * @version 1.0
+ * @author 刘镇 (suninformation@163.com) on 2017/01/01 02:57
  */
-public interface ISSOTokenAdapter extends IInitializable<ISSO> {
+public interface ITokenAdapter extends IInitialization<ISingleSignOn>, IDestroyable {
 
     /**
-     * @return 生成令牌唯一标识KEY
+     * 生成令牌唯一标识
+     *
+     * @return 返回生成的令牌唯一标识
      */
     String generateTokenKey();
 
     /**
-     * 从请求中获取令牌对象
+     * 验证令牌是否有效
      *
-     * @return 返回令牌对象, 若不存在则返回null
+     * @param token 令牌对象
+     * @return 返回true表示有效
+     * @throws Exception 可能产生的任何异常
      */
-    ISSOToken getToken();
+    boolean validateToken(IToken token) throws Exception;
+
+    /**
+     * 从请求中获取令牌对象, 若不存在则返回null
+     *
+     * @return 返回令牌对象
+     */
+    IToken getToken();
 
     /**
      * 设置令牌
      *
      * @param token 令牌对象
+     * @return 返回令牌序列化字符串
      * @throws Exception 可能产生的任何异常
      */
-    void setToken(ISSOToken token) throws Exception;
+    String setToken(IToken token) throws Exception;
 
     /**
      * 清理令牌
@@ -55,14 +67,14 @@ public interface ISSOTokenAdapter extends IInitializable<ISSO> {
      * @return 返回加密后的令牌序列化字符串
      * @throws Exception 可能产生的任何异常
      */
-    String encryptToken(ISSOToken token) throws Exception;
+    String encryptToken(IToken token) throws Exception;
 
     /**
      * 对加密的令牌序列化串进行解密
      *
-     * @param tokenSeriStr 加密的令牌序列化串
+     * @param tokenStr 加密的令牌序列化串
      * @return 返回解密后的令牌对象
      * @throws Exception 可能产生的任何异常
      */
-    ISSOToken decryptToken(String tokenSeriStr) throws Exception;
+    IToken decryptToken(String tokenStr) throws Exception;
 }

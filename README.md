@@ -1,20 +1,11 @@
 ### YMP-SSO (Single Sign-On)
 
-> 单点登录服务模块，特性如下：
-> 
-> - 仅一个拦截器搞定单点登录；
-> - 支持Cookies、请求头或请求参数临时存储授权令牌；
-> - 支持服务端和客户端两种模式；
-> - 支持多种跨域身份验证方式；
-> - 支持通过Ajax调用RESTFul API接口的身份验证；
-> - 支持授权令牌加解密；
-
 #### Maven包依赖
 
     <dependency>
         <groupId>net.ymate.module</groupId>
         <artifactId>ymate-module-sso</artifactId>
-        <version>1.0.1</version>
+        <version>2.0.0</version>
     </dependency>
 
 #### 模块配置参数说明
@@ -33,13 +24,19 @@
     ymp.configs.module.sso.token_param_name=
     
     # 令牌生命周期(秒), 默认值为0, 小于等于0表示不启用
-    ymp.configs.module.sso.token_maxage=
+    ymp.configs.module.sso.token_max_age=
     
     # 令牌有效性验证的时间间隔(秒), 默认值: 0
-    ymp.configs.module.sso.token_validate_time_interval=
+    ymp.configs.module.sso.token_validation_time_interval=
+    
+    # 缓存名称前缀, 默认值: ""
+    ymp.configs.module.sso.cache_name_prefix=
     
     # 开启多会话模式(即同一账号允许多处登录), 默认值: false
     ymp.configs.module.sso.multi_session_enabled=
+    
+    # 同一账号最多会话数量，小于等于0表示不限制
+    ymp.configs.module.sso.multi_session_max_count=
     
     # 开启会话的IP地址检查, 默认值: false
     ymp.configs.module.sso.ip_check_enabled=
@@ -53,49 +50,67 @@
     # 客户端与服务端之间通讯请求参数签名密钥, 默认值: ""
     ymp.configs.module.sso.service_auth_key=
     
-    # 令牌分析适配器接口实现, 默认值: net.ymate.module.sso.impl.DefaultSSOTokenAdapter
+    # 服务请求映射前缀(不允许'/'开始和结束), 默认值: ""
+    ymp.configs.module.sso.service_prefix=
+    
+    # 是否注册通用令牌验证控制器, 默认值: false
+    ymp.configs.module.sso.general_auth_enabled=
+    
+    # 令牌分析适配器接口实现, 默认值: net.ymate.module.sso.impl.DefaultTokenAdapter
     ymp.configs.module.sso.token_adapter_class=
     
-    # 令牌存储适配器接口实现, 非客户端模式时必选参数, 默认值: 空
-    ymp.configs.module.sso.storage_adapter_class=
+    # 令牌存储适配器接口实现, 默认值: net.ymate.module.sso.impl.DefaultTokenStorageAdapter
+    ymp.configs.module.sso.token_storage_adapter_class=
     
-    # 用户自定义属性加载适配器接口实现, 非客户端模式时有效, 默认值: 空
-    ymp.configs.module.sso.attribute_adapter_class=
+    # 令牌自定义属性加载适配器接口实现, 非客户端模式时有效, 默认值: 空
+    ymp.configs.module.sso.token_attribute_adapter_class=
     
-    # 与UserSessionBean整合时, 必须设置此参数
-    ymp.params.webmvc.user_session_handler_class=net.ymate.module.sso.support.SSOUserSessionHandler
+    # 是否开启会话安全确认, 默认值: false
+    ymp.configs.module.sso.token_confirm_enabled=
+    
+    # 会话安全确认处理器接口实现, 默认值: net.ymate.module.sso.impl.DefaultTokenConfirmHandler
+    ymp.configs.module.sso.token_confirm_handler_class=
+    
+    # 会话安全确认重定向URL地址, 默认值: confirm?redirect_url=${redirect_url}
+    ymp.configs.module.sso.token_confirm_redirect_url=
+    
+    # 会话安全确认超时时间(分钟)，小于等于0则使用默认值: 30
+    ymp.configs.module.sso.token_confirm_timeout=
 
 #### 示例代码：
 
 - 配置用户会话检查拦截器，该拦截器已集成单点登录相关处理逻辑：
 
         @RequestMapping(value = "/user/profile/edit", method = Type.HttpMethod.POST)
-        @Before(UserSessionCheckInterceptor.class)
+        @UserSessionCheck
         public IView __doEditUserProfile(@RequestParam String nickName, ......) throws Exception {
             // ...... 省略
-            return WebResult.SUCCESS().toJSON();
+            return WebResult.success().toJsonView();
         }
 
 - 通过代码操作用户的登录授权令牌对象：
 
-        ISSOToken _token = SSO.get().currentToken();
-        if (_token == null) {
-            // 若返回值为空则表示令牌对象不存在，创建令牌需要传入用户唯一标识Id
-            _token = SSO.get().createToken("uid_xxx");
+        ISingleSignOn singleSignOn = SingleSignOn.get();
+        IToken token = singleSignOn.getCurrentToken();
+        if (token == null) {
+            // 若返回值为空则表示令牌对象不存在
+            token = singleSignOn.createToken("uid_xxx", "127.0.0.1", "FireFox");
+            // 存储令牌并使其生效
+            singleSignOn.saveOrUpdateToken(token);
         }
-        if (_token != null) {
-            // 令牌唯一标识Id
-            _token.getId();
-            // 用户唯一标识Id
-            _token.getUid();
+        if (token != null) {
+            // 令牌唯一标识
+            token.getId();
+            // 用户唯一标识
+            token.getUid();
             // 用户IP地址
-            _token.getRemoteAddr();
+            token.getRemoteAddr();
             // 用户代理信息
-            _token.getUserAgent();
+            token.getUserAgent();
             // 令牌对象创建时间
-            _token.getCreateTime();
+            token.getCreateTime();
             // 令牌扩展属性
-            _token.getAttributes();
+            token.getAttributes();
         }
 
 #### One More Thing
