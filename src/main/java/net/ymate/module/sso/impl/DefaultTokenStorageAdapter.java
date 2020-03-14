@@ -30,8 +30,6 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class DefaultTokenStorageAdapter implements ITokenStorageAdapter {
 
-    private ISingleSignOn owner;
-
     private ICache tokenCache;
 
     private boolean initialized;
@@ -39,7 +37,6 @@ public class DefaultTokenStorageAdapter implements ITokenStorageAdapter {
     @Override
     public void initialize(ISingleSignOn owner) throws Exception {
         if (!initialized) {
-            this.owner = owner;
             String cacheName = String.format("%s%s", StringUtils.trimToEmpty(owner.getConfig().getCacheNamePrefix()), ISingleSignOn.MODULE_NAME);
             tokenCache = owner.getOwner().getModuleManager().getModule(Caches.class).getConfig().getCacheProvider().getCache(cacheName);
             this.initialized = true;
@@ -54,7 +51,6 @@ public class DefaultTokenStorageAdapter implements ITokenStorageAdapter {
     @Override
     public void close() throws Exception {
         if (initialized) {
-            this.owner = null;
             this.initialized = false;
         }
     }

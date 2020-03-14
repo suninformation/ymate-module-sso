@@ -42,7 +42,7 @@ public class DefaultToken implements IToken {
 
     private long lastConfirmTime;
 
-    private Map<String, Serializable> attributes = new HashMap<>();
+    private final Map<String, Serializable> attributes = new HashMap<>();
 
     public DefaultToken() {
     }

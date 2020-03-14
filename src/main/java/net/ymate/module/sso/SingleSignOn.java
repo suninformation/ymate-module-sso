@@ -139,7 +139,9 @@ public final class SingleSignOn implements IModule, ISingleSignOn {
                                     storageAdapter.cleanup(token.getUid());
                                 }
                             } catch (Exception e) {
-                                LOG.warn(String.format("An exception occurred while cleaning token for user '%s'", token.getUid()), RuntimeUtils.unwrapThrow(e));
+                                if (LOG.isWarnEnabled()) {
+                                    LOG.warn(String.format("An exception occurred while cleaning token for user '%s'", token.getUid()), RuntimeUtils.unwrapThrow(e));
+                                }
                             }
                         }
                     }

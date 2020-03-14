@@ -120,7 +120,9 @@ public class DefaultTokenAdapter implements ITokenAdapter {
                 }
             }
         } catch (Exception e) {
-            LOG.warn(String.format("An exception occurred while validate token '%s' for user '%s'", token.getId(), token.getUid()), RuntimeUtils.unwrapThrow(e));
+            if (LOG.isWarnEnabled()) {
+                LOG.warn(String.format("An exception occurred while validate token '%s' for user '%s'", token.getId(), token.getUid()), RuntimeUtils.unwrapThrow(e));
+            }
         }
         return false;
     }
@@ -143,7 +145,9 @@ public class DefaultTokenAdapter implements ITokenAdapter {
                 }
             }
         } catch (Exception e) {
-            LOG.warn("An exception occurred while getting token for current user", RuntimeUtils.unwrapThrow(e));
+            if (LOG.isWarnEnabled()) {
+                LOG.warn("An exception occurred while getting token for current user", RuntimeUtils.unwrapThrow(e));
+            }
         }
         return token;
     }
