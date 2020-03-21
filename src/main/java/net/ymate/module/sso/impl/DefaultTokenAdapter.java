@@ -33,6 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import javax.crypto.BadPaddingException;
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
@@ -183,12 +184,18 @@ public class DefaultTokenAdapter implements ITokenAdapter {
     @Override
     public IToken decryptToken(String tokenStr) throws Exception {
         if (StringUtils.isNotBlank(tokenStr)) {
-            String userAgent = WebContext.getRequest().getHeader(Type.HttpHead.USER_AGENT);
-            String[] tokenArr = StringUtils.split(WebUtils.decryptStr(tokenStr, userAgent), "|");
-            if (tokenArr != null && tokenArr.length == TOKEN_PART_LENGTH) {
-                DefaultToken token = new DefaultToken(tokenArr[1], tokenArr[2], userAgent, BlurObject.bind(tokenArr[3]).toLongValue());
-                token.setId(tokenArr[0]);
-                return token;
+            try {
+                String userAgent = WebContext.getRequest().getHeader(Type.HttpHead.USER_AGENT);
+                String[] tokenArr = StringUtils.split(WebUtils.decryptStr(tokenStr, userAgent), "|");
+                if (tokenArr != null && tokenArr.length == TOKEN_PART_LENGTH) {
+                    DefaultToken token = new DefaultToken(tokenArr[1], tokenArr[2], userAgent, BlurObject.bind(tokenArr[3]).toLongValue());
+                    token.setId(tokenArr[0]);
+                    return token;
+                }
+            } catch (Exception e) {
+                if (!(e instanceof BadPaddingException)) {
+                    throw e;
+                }
             }
         }
         return null;
