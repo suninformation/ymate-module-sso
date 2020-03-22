@@ -117,9 +117,9 @@ public final class DefaultSingleSignOnConfig implements ISingleSignOnConfig {
             tokenConfirmTimeout = configReader.getInt(TOKEN_CONFIRM_TIMEOUT, confAnn != null && confAnn.tokenConfirmTimeout() > 0 ? confAnn.tokenConfirmTimeout() : DEFAULT_TOKEN_CONFIRM_TIMEOUT);
             generalAuthEnabled = configReader.getBoolean(GENERAL_AUTH_ENABLED, confAnn != null && confAnn.generalAuthEnabled());
             servicePrefix = configReader.getString(SERVICE_PREFIX, confAnn != null ? confAnn.servicePrefix() : null);
+            serviceAuthKey = configReader.getString(SERVICE_AUTH_KEY, confAnn != null ? confAnn.serviceAuthKey() : null);
             if (clientMode) {
                 serviceBaseUrl = StringUtils.trimToNull(configReader.getString(SERVICE_BASE_URL, confAnn != null ? confAnn.serviceBaseUrl() : null));
-                serviceAuthKey = configReader.getString(SERVICE_AUTH_KEY, confAnn != null ? confAnn.serviceAuthKey() : null);
             } else {
                 tokenStorageAdapter = configReader.getClassImpl(TOKEN_STORAGE_ADAPTER_CLASS, confAnn == null || confAnn.tokenStorageAdapterClass().equals(ITokenStorageAdapter.class) ? null : confAnn.tokenStorageAdapterClass().getName(), ITokenStorageAdapter.class);
                 tokenAttributeAdapter = configReader.getClassImpl(TOKEN_ATTRIBUTE_ADAPTER_CLASS, confAnn == null || confAnn.tokenAttributeAdapterClass().equals(ITokenAttributeAdapter.class) ? null : confAnn.tokenAttributeAdapterClass().getName(), ITokenAttributeAdapter.class);

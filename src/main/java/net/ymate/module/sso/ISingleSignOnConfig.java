@@ -161,9 +161,9 @@ public interface ISingleSignOnConfig extends IInitialization<ISingleSignOn> {
     String getServiceBaseUrl();
 
     /**
-     * 客户端与服务端之间通讯请求参数签名密钥, 默认值: ""
+     * 客户端与服务端之间通讯请求参数签名以及令牌加解密附加密钥, 默认值: ""
      *
-     * @return 返回签名密钥
+     * @return 返回密钥
      */
     String getServiceAuthKey();
 

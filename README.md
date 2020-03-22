@@ -47,7 +47,7 @@
     # 指定服务端基准URL路径(若客户端模式开启时则此项必填), 必须以'http://'或'https://'开始并以'/'结束, 如: http://www.ymate.net/service/, 默认值: 空
     ymp.configs.module.sso.service_base_url=
     
-    # 客户端与服务端之间通讯请求参数签名密钥, 默认值: ""
+    # 客户端与服务端之间通讯请求参数签名以及令牌加解密附加密钥, 默认值: ""
     ymp.configs.module.sso.service_auth_key=
     
     # 服务请求映射前缀(不允许'/'开始和结束), 默认值: ""

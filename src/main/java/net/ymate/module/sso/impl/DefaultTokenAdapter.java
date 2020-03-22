@@ -178,6 +178,7 @@ public class DefaultTokenAdapter implements ITokenAdapter {
         if (StringUtils.isBlank(encryptKey)) {
             encryptKey = WebContext.getRequest().getHeader(Type.HttpHead.USER_AGENT);
         }
+        encryptKey += StringUtils.trimToEmpty(owner.getConfig().getServiceAuthKey());
         return WebUtils.encryptStr(String.format("%s|%s|%s|%d", token.getId(), token.getUid(), token.getRemoteAddr(), token.getCreateTime()), encryptKey);
     }
 
@@ -186,7 +187,8 @@ public class DefaultTokenAdapter implements ITokenAdapter {
         if (StringUtils.isNotBlank(tokenStr)) {
             try {
                 String userAgent = WebContext.getRequest().getHeader(Type.HttpHead.USER_AGENT);
-                String[] tokenArr = StringUtils.split(WebUtils.decryptStr(tokenStr, userAgent), "|");
+                String encryptKey = userAgent + StringUtils.trimToEmpty(owner.getConfig().getServiceAuthKey());
+                String[] tokenArr = StringUtils.split(WebUtils.decryptStr(tokenStr, encryptKey), "|");
                 if (tokenArr != null && tokenArr.length == TOKEN_PART_LENGTH) {
                     DefaultToken token = new DefaultToken(tokenArr[1], tokenArr[2], userAgent, BlurObject.bind(tokenArr[3]).toLongValue());
                     token.setId(tokenArr[0]);

@@ -240,13 +240,28 @@ public final class SingleSignOn implements IModule, ISingleSignOn {
 
     @Override
     public String saveOrUpdateToken(IToken token) throws Exception {
+        return saveOrUpdateToken(token, true);
+    }
+
+    @Override
+    public String saveOrUpdateToken(IToken token, boolean cookie) throws Exception {
         config.getTokenStorageAdapter().saveOrUpdate(token);
-        return config.getTokenAdapter().setToken(token);
+        if (cookie) {
+            return config.getTokenAdapter().setToken(token);
+        }
+        return config.getTokenAdapter().encryptToken(token);
     }
 
     @Override
     public void cleanAndRemoveToken(IToken token) throws Exception {
-        config.getTokenAdapter().cleanToken();
+        cleanAndRemoveToken(token, true);
+    }
+
+    @Override
+    public void cleanAndRemoveToken(IToken token, boolean cookie) throws Exception {
+        if (cookie) {
+            config.getTokenAdapter().cleanToken();
+        }
         config.getTokenStorageAdapter().remove(token);
     }
 }

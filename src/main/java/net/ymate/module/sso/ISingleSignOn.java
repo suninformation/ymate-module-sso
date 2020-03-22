@@ -96,10 +96,29 @@ public interface ISingleSignOn extends IInitialization<IApplication>, IDestroyab
     String saveOrUpdateToken(IToken token) throws Exception;
 
     /**
+     * 存储或更新令牌并使其生效
+     *
+     * @param token  令牌对象
+     * @param cookie 是否设置Cookie值
+     * @return 返回令牌序列化字符串
+     * @throws Exception 可能产生的任何异常
+     */
+    String saveOrUpdateToken(IToken token, boolean cookie) throws Exception;
+
+    /**
      * 清理并删除令牌存储
      *
      * @param token 令牌对象
      * @throws Exception 可能产生的任何异常
      */
     void cleanAndRemoveToken(IToken token) throws Exception;
+
+    /**
+     * 清理并删除令牌存储
+     *
+     * @param token  令牌对象
+     * @param cookie 是否设置Cookie值
+     * @throws Exception 可能产生的任何异常
+     */
+    void cleanAndRemoveToken(IToken token, boolean cookie) throws Exception;
 }
