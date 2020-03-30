@@ -25,6 +25,7 @@ import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.*;
 import net.ymate.platform.core.beans.BeanMeta;
 import net.ymate.platform.core.beans.IBeanFactory;
+import net.ymate.platform.core.beans.intercept.InterceptContext;
 import net.ymate.platform.core.beans.intercept.InterceptSettings;
 import net.ymate.platform.core.event.Events;
 import net.ymate.platform.core.event.IEventListener;
@@ -197,7 +198,20 @@ public final class SingleSignOn implements IModule, ISingleSignOn {
 
     @Override
     public IToken getCurrentToken() throws Exception {
-        return checkToken(config.getTokenAdapter().getToken());
+        IToken token = (IToken) InterceptContext.getLocalAttributes().get(IToken.class.getName());
+        if (token != null) {
+            token = checkToken(token);
+            if (token == null) {
+                InterceptContext.getLocalAttributes().remove(IToken.class.getName());
+            }
+        }
+        if (token == null) {
+            token = checkToken(config.getTokenAdapter().getToken());
+            if (token != null) {
+                InterceptContext.getLocalAttributes().put(IToken.class.getName(), token);
+            }
+        }
+        return token;
     }
 
     @Override

@@ -63,15 +63,7 @@ public abstract class AbstractUserSessionInterceptor extends AbstractInterceptor
     }
 
     protected IToken getCurrentToken() throws Exception {
-        IToken token = (IToken) InterceptContext.getLocalAttributes().get(IToken.class.getName());
-        if (token != null) {
-            return token;
-        }
-        token = owner.getCurrentToken();
-        if (token != null) {
-            InterceptContext.getLocalAttributes().put(IToken.class.getName(), token);
-        }
-        return token;
+        return owner.getCurrentToken();
     }
 
     public SingleSignOn getOwner() {

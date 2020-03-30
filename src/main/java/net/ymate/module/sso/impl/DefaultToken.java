@@ -16,6 +16,7 @@
 package net.ymate.module.sso.impl;
 
 import net.ymate.module.sso.IToken;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -151,5 +152,20 @@ public class DefaultToken implements IToken {
     @Override
     public long getLastConfirmTime() {
         return lastConfirmTime;
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("id", id)
+                .append("uid", uid)
+                .append("remoteAddr", remoteAddr)
+                .append("userAgent", userAgent)
+                .append("lastValidationTime", lastValidationTime)
+                .append("createTime", createTime)
+                .append("lastActivateTime", lastActivateTime)
+                .append("lastConfirmTime", lastConfirmTime)
+                .append("attributes", attributes)
+                .toString();
     }
 }
