@@ -15,11 +15,11 @@
  */
 package net.ymate.module.sso.impl;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import net.ymate.module.sso.*;
 import net.ymate.platform.commons.http.HttpClientHelper;
 import net.ymate.platform.commons.http.IHttpResponse;
+import net.ymate.platform.commons.json.IJsonObjectWrapper;
+import net.ymate.platform.commons.json.JsonWrapper;
 import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.util.ParamUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
@@ -90,16 +90,19 @@ public class DefaultTokenAdapter implements ITokenAdapter {
                 String serviceUrl = owner.getConfig().getServiceBaseUrl() + owner.getConfig().getServicePrefix() + ISingleSignOnConfig.DEFAULT_CONTROLLER_MAPPING;
                 IHttpResponse httpResponse = HttpClientHelper.create().post(serviceUrl, params);
                 if (httpResponse != null && httpResponse.getStatusCode() == HttpServletResponse.SC_OK) {
-                    JSONObject resultObj = JSON.parseObject(httpResponse.getContent());
-                    if (resultObj.getIntValue(Type.Const.PARAM_RET) == ErrorCode.SUCCEED) {
-                        // 令牌验证通过，则进行本地Cookie存储
-                        owner.getConfig().getTokenAdapter().setToken(token);
-                        // 尝试从响应报文中提取并追加token属性数据
-                        JSONObject dataObj = resultObj.getJSONObject(Type.Const.PARAM_DATA);
-                        if (dataObj != null && !dataObj.isEmpty()) {
-                            dataObj.forEach((key, value) -> token.addAttribute(key, BlurObject.bind(value).toStringValue()));
+                    JsonWrapper jsonWrapper = JsonWrapper.fromJson(httpResponse.getContent());
+                    if (jsonWrapper != null && jsonWrapper.isJsonObject()) {
+                        IJsonObjectWrapper resultObj = jsonWrapper.getAsJsonObject();
+                        if (resultObj.getInt(Type.Const.PARAM_RET) == ErrorCode.SUCCEED) {
+                            // 令牌验证通过，则进行本地Cookie存储
+                            owner.getConfig().getTokenAdapter().setToken(token);
+                            // 尝试从响应报文中提取并追加token属性数据
+                            IJsonObjectWrapper dataObj = resultObj.getJsonObject(Type.Const.PARAM_DATA);
+                            if (dataObj != null && !dataObj.isEmpty()) {
+                                dataObj.toMap().forEach((key, value) -> token.addAttribute(key, BlurObject.bind(value).toStringValue()));
+                            }
+                            return true;
                         }
-                        return true;
                     }
                 }
             } else {
