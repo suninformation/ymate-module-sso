@@ -24,10 +24,11 @@ import net.ymate.platform.commons.lang.BlurObject;
 import net.ymate.platform.commons.util.ParamUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.commons.util.UUIDUtils;
-import net.ymate.platform.core.support.ErrorCode;
+import net.ymate.platform.webmvc.IWebResult;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.util.CookieHelper;
+import net.ymate.platform.webmvc.util.WebResult;
 import net.ymate.platform.webmvc.util.WebUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -89,19 +90,24 @@ public class DefaultTokenAdapter implements ITokenAdapter {
                 params.put(IToken.PARAM_SIGN, ParamUtils.createSignature(params, false, owner.getConfig().getServiceAuthKey()));
                 String serviceUrl = owner.getConfig().getServiceBaseUrl() + owner.getConfig().getServicePrefix() + ISingleSignOnConfig.DEFAULT_CONTROLLER_MAPPING;
                 IHttpResponse httpResponse = HttpClientHelper.create().post(serviceUrl, params);
-                if (httpResponse != null && httpResponse.getStatusCode() == HttpServletResponse.SC_OK) {
-                    JsonWrapper jsonWrapper = JsonWrapper.fromJson(httpResponse.getContent());
-                    if (jsonWrapper != null && jsonWrapper.isJsonObject()) {
-                        IJsonObjectWrapper resultObj = jsonWrapper.getAsJsonObject();
-                        if (resultObj.getInt(Type.Const.PARAM_RET) == ErrorCode.SUCCEED) {
-                            // 令牌验证通过，则进行本地Cookie存储
-                            owner.getConfig().getTokenAdapter().setToken(token);
-                            // 尝试从响应报文中提取并追加token属性数据
-                            IJsonObjectWrapper dataObj = resultObj.getJsonObject(Type.Const.PARAM_DATA);
-                            if (dataObj != null && !dataObj.isEmpty()) {
-                                dataObj.toMap().forEach((key, value) -> token.addAttribute(key, BlurObject.bind(value).toStringValue()));
+                if (httpResponse != null) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(httpResponse.toString());
+                    }
+                    if (httpResponse.getStatusCode() == HttpServletResponse.SC_OK) {
+                        JsonWrapper jsonWrapper = JsonWrapper.fromJson(httpResponse.getContent());
+                        if (jsonWrapper != null && jsonWrapper.isJsonObject()) {
+                            IWebResult<?> result = WebResult.builder().fromJson(jsonWrapper.getAsJsonObject()).build();
+                            if (result.isSuccess()) {
+                                // 令牌验证通过，则进行本地Cookie存储
+                                owner.getConfig().getTokenAdapter().setToken(token);
+                                // 尝试从响应报文中提取并追加token属性数据
+                                IJsonObjectWrapper dataObj = JsonWrapper.toJson(result.data()).getAsJsonObject();
+                                if (dataObj != null && !dataObj.isEmpty()) {
+                                    dataObj.toMap().forEach((key, value) -> token.addAttribute(key, BlurObject.bind(value).toStringValue()));
+                                }
+                                return true;
                             }
-                            return true;
                         }
                     }
                 }

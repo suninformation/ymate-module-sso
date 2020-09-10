@@ -65,6 +65,12 @@
     # 令牌自定义属性加载适配器接口实现, 非客户端模式时有效, 默认值: 空
     ymp.configs.module.sso.token_attribute_adapter_class=
     
+    # 检测令牌无效时重定向URL地址(用于跳转至用户登录页面, 如: login?redirect_url=${redirect_url}), 默认值: 空
+    ymp.configs.module.sso.token_invalid_redirect_url=
+    
+    # 检测令牌已存在时重定向URL地址(用于登录成功后跳转), 默认值: 空
+    ymp.configs.module.sso.token_already_redirect_url=
+    
     # 是否开启会话安全确认, 默认值: false
     ymp.configs.module.sso.token_confirm_enabled=
     

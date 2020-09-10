@@ -42,7 +42,7 @@ public final class UserSessionAlreadyInterceptor extends AbstractUserSessionInte
                 HttpServletRequest httpServletRequest = WebContext.getRequest();
                 //
                 UserSessionAlready sessionAlreadyAnn = findInterceptAnnotation(context, UserSessionAlready.class);
-                String redirectUrl = sessionAlreadyAnn != null ? sessionAlreadyAnn.redirectUrl() : null;
+                String redirectUrl = StringUtils.defaultIfBlank(getOwner().getConfig().getTokenAlreadyRedirectUrl(), sessionAlreadyAnn != null ? sessionAlreadyAnn.redirectUrl() : null);
                 if (StringUtils.isNotBlank(redirectUrl)) {
                     redirectUrl = WebUtils.buildRedirectUrl(context, httpServletRequest, WebUtils.getContextParamValue(context, Type.Const.REDIRECT_URL, redirectUrl), true);
                 }

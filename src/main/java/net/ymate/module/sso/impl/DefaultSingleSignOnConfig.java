@@ -64,6 +64,10 @@ public final class DefaultSingleSignOnConfig implements ISingleSignOnConfig {
 
     private ITokenAttributeAdapter tokenAttributeAdapter;
 
+    private String tokenInvalidRedirectUrl;
+
+    private String tokenAlreadyRedirectUrl;
+
     private boolean tokenConfirmEnabled;
 
     private ITokenConfirmHandler tokenConfirmHandler;
@@ -111,6 +115,8 @@ public final class DefaultSingleSignOnConfig implements ISingleSignOnConfig {
             ipCheckEnabled = configReader.getBoolean(IP_CHECK_ENABLED, confAnn != null && confAnn.ipCheckEnabled());
             clientMode = configReader.getBoolean(CLIENT_MODE, confAnn != null && confAnn.clientMode());
             tokenAdapter = configReader.getClassImpl(TOKEN_ADAPTER_CLASS, confAnn == null || confAnn.tokenAdapterClass().equals(ITokenAdapter.class) ? null : confAnn.tokenAdapterClass().getName(), ITokenAdapter.class);
+            tokenInvalidRedirectUrl = configReader.getString(TOKEN_INVALID_REDIRECT_URL, confAnn != null ? confAnn.tokenInvalidRedirectUrl() : null);
+            tokenAlreadyRedirectUrl = configReader.getString(TOKEN_ALREADY_REDIRECT_URL, confAnn != null ? confAnn.tokenAlreadyRedirectUrl() : null);
             tokenConfirmEnabled = configReader.getBoolean(TOKEN_CONFIRM_ENABLED, confAnn != null && confAnn.tokenConfirmEnabled());
             tokenConfirmHandler = configReader.getClassImpl(TOKEN_CONFIRM_HANDLER_CLASS, confAnn == null || confAnn.tokenConfirmHandlerClass().equals(ITokenConfirmHandler.class) ? null : confAnn.tokenConfirmHandlerClass().getName(), ITokenConfirmHandler.class);
             tokenConfirmRedirectUrl = configReader.getString(TOKEN_CONFIRM_REDIRECT_URL, confAnn != null ? confAnn.tokenConfirmRedirectUrl() : null);
@@ -361,6 +367,28 @@ public final class DefaultSingleSignOnConfig implements ISingleSignOnConfig {
         return tokenAttributeAdapter;
     }
 
+    @Override
+    public String getTokenInvalidRedirectUrl() {
+        return tokenInvalidRedirectUrl;
+    }
+
+    public void setTokenInvalidRedirectUrl(String tokenInvalidRedirectUrl) {
+        if (!initialized) {
+            this.tokenInvalidRedirectUrl = tokenInvalidRedirectUrl;
+        }
+    }
+
+    @Override
+    public String getTokenAlreadyRedirectUrl() {
+        return tokenAlreadyRedirectUrl;
+    }
+
+    public void setTokenAlreadyRedirectUrl(String tokenAlreadyRedirectUrl) {
+        if (!initialized) {
+            this.tokenAlreadyRedirectUrl = tokenAlreadyRedirectUrl;
+        }
+    }
+
     public void setTokenAttributeAdapter(ITokenAttributeAdapter tokenAttributeAdapter) {
         if (!initialized) {
             this.tokenAttributeAdapter = tokenAttributeAdapter;
@@ -505,6 +533,16 @@ public final class DefaultSingleSignOnConfig implements ISingleSignOnConfig {
 
         public Builder tokenAttributeAdapter(ITokenAttributeAdapter tokenAttributeAdapter) {
             config.setTokenAttributeAdapter(tokenAttributeAdapter);
+            return this;
+        }
+
+        public Builder tokenInvalidRedirectUrl(String tokenInvalidRedirectUrl) {
+            config.setTokenInvalidRedirectUrl(tokenInvalidRedirectUrl);
+            return this;
+        }
+
+        public Builder tokenAlreadyRedirectUrl(String tokenAlreadyRedirectUrl) {
+            config.setTokenAlreadyRedirectUrl(tokenAlreadyRedirectUrl);
             return this;
         }
 

@@ -123,6 +123,16 @@ public @interface SingleSignOnConf {
     Class<? extends ITokenAttributeAdapter> tokenAttributeAdapterClass() default ITokenAttributeAdapter.class;
 
     /**
+     * @return 检测令牌无效时重定向URL地址, 用于跳转至用户登录页面, 如: login?redirect_url=${redirect_url}, 默认值: 空
+     */
+    String tokenInvalidRedirectUrl() default StringUtils.EMPTY;
+
+    /**
+     * @return 检测令牌已存在时重定向URL地址, 用于登录成功后跳转, 默认值: 空
+     */
+    String tokenAlreadyRedirectUrl() default StringUtils.EMPTY;
+
+    /**
      * @return 是否开启会话安全确认, 默认值: false
      */
     boolean tokenConfirmEnabled() default false;

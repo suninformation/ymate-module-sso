@@ -24,6 +24,7 @@ import net.ymate.platform.core.beans.intercept.InterceptException;
 import net.ymate.platform.core.support.ErrorCode;
 import net.ymate.platform.webmvc.IWebErrorProcessor;
 import net.ymate.platform.webmvc.IWebMvc;
+import net.ymate.platform.webmvc.IWebResultBuilder;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
 import net.ymate.platform.webmvc.impl.DefaultWebErrorProcessor;
@@ -50,11 +51,11 @@ public abstract class AbstractUserSessionInterceptor extends AbstractInterceptor
         String defaultViewFormat = errorProcessor instanceof DefaultWebErrorProcessor ? ((DefaultWebErrorProcessor) errorProcessor).getErrorDefaultViewFormat() : null;
         //
         if (WebUtils.isAjax(httpServletRequest) || WebUtils.isXmlFormat(httpServletRequest) || WebUtils.isJsonFormat(httpServletRequest) || StringUtils.containsAny(defaultViewFormat, Type.Const.FORMAT_JSON, Type.Const.FORMAT_XML)) {
-            WebResult webResult = WebResult.create(errorCode);
+            IWebResultBuilder builder = WebResult.builder(errorCode);
             if (StringUtils.isNotBlank(redirectUrl)) {
-                webResult.attr(Type.Const.REDIRECT_URL, redirectUrl);
+                builder.attr(Type.Const.REDIRECT_URL, redirectUrl);
             }
-            return WebResult.formatView(webResult, defaultViewFormat);
+            return WebResult.formatView(builder.build(), defaultViewFormat);
         }
         if (observeSilence && StringUtils.isNotBlank(redirectUrl)) {
             return View.redirectView(redirectUrl);

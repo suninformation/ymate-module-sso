@@ -130,6 +130,16 @@ public final class DefaultSingleSignOnConfigurable extends DefaultModuleConfigur
             return this;
         }
 
+        public Builder tokenInvalidRedirectUrl(String tokenInvalidRedirectUrl) {
+            configurable.addConfig(ISingleSignOnConfig.TOKEN_INVALID_REDIRECT_URL, tokenInvalidRedirectUrl);
+            return this;
+        }
+
+        public Builder tokenAlreadyRedirectUrl(String tokenAlreadyRedirectUrl) {
+            configurable.addConfig(ISingleSignOnConfig.TOKEN_ALREADY_REDIRECT_URL, tokenAlreadyRedirectUrl);
+            return this;
+        }
+
         public Builder tokenConfirmEnabled(boolean tokenConfirmEnabled) {
             configurable.addConfig(ISingleSignOnConfig.TOKEN_CONFIRM_ENABLED, String.valueOf(tokenConfirmEnabled));
             return this;

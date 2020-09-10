@@ -64,8 +64,7 @@ public class DefaultTokenConfirmHandler implements ITokenConfirmHandler {
             HttpServletRequest httpServletRequest = WebContext.getRequest();
             //
             if (StringUtils.isNotBlank(redirectUrl)) {
-                redirectUrl = ExpressionUtils.bind(WebUtils.getContextParamValue(context, Type.Const.REDIRECT_URL, redirectUrl))
-                        .set(Type.Const.REDIRECT_URL, WebUtils.appendQueryStr(httpServletRequest, true)).getResult();
+                redirectUrl = ExpressionUtils.bind(redirectUrl).set(Type.Const.REDIRECT_URL, WebUtils.appendQueryStr(httpServletRequest, true)).getResult();
             }
             UserSessionConfirmationStateException confirmException = new UserSessionConfirmationStateException();
             confirmException.setRedirectUrl(redirectUrl);

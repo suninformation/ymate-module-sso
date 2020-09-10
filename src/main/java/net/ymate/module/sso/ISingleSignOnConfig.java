@@ -32,6 +32,8 @@ public interface ISingleSignOnConfig extends IInitialization<ISingleSignOn> {
 
     int DEFAULT_TOKEN_CONFIRM_TIMEOUT = 30;
 
+    String DEFAULT_TOKEN_CONFIRM_REDIRECT_URL = "confirm?redirect_url=${redirect_url}";
+
     String ENABLED = "enabled";
 
     String TOKEN_COOKIE_NAME = "token_cookie_name";
@@ -67,6 +69,10 @@ public interface ISingleSignOnConfig extends IInitialization<ISingleSignOn> {
     String TOKEN_STORAGE_ADAPTER_CLASS = "token_storage_adapter_class";
 
     String TOKEN_ATTRIBUTE_ADAPTER_CLASS = "token_attribute_adapter_class";
+
+    String TOKEN_INVALID_REDIRECT_URL = "token_invalid_redirect_url";
+
+    String TOKEN_ALREADY_REDIRECT_URL = "token_already_redirect_url";
 
     String TOKEN_CONFIRM_ENABLED = "token_confirm_enabled";
 
@@ -201,6 +207,20 @@ public interface ISingleSignOnConfig extends IInitialization<ISingleSignOn> {
      * @return 返回令牌自定义属性加载适配器接口实现
      */
     ITokenAttributeAdapter getTokenAttributeAdapter();
+
+    /**
+     * 检测令牌无效时重定向URL地址(用于跳转至用户登录页面, 如: login?redirect_url=${redirect_url}), 默认值: 空
+     *
+     * @return 返回令牌无效时重定向URL地址
+     */
+    String getTokenInvalidRedirectUrl();
+
+    /**
+     * 检测令牌已存在时重定向URL地址(用于登录成功后跳转), 默认值: 空
+     *
+     * @return 返回令牌已存在时重定向URL地址
+     */
+    String getTokenAlreadyRedirectUrl();
 
     /**
      * 是否开启会话安全确认, 默认值: false

@@ -15,10 +15,12 @@
  */
 package net.ymate.module.sso.interceptor;
 
+import net.ymate.module.sso.ISingleSignOnConfig;
 import net.ymate.module.sso.IToken;
 import net.ymate.module.sso.ITokenConfirmHandler;
 import net.ymate.platform.core.beans.intercept.InterceptContext;
 import net.ymate.platform.core.beans.intercept.InterceptException;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 在当前用户会话有效的前提下要求再次确认用户密码以保证操作的安全性, 该拦截器用于验证安全确认视图返回的数据的合法性
@@ -33,9 +35,10 @@ public final class UserSessionConfirmInterceptor extends AbstractUserSessionInte
             try {
                 IToken token = getCurrentToken();
                 if (token != null) {
-                    ITokenConfirmHandler confirmHandler = getOwner().getConfig().getTokenConfirmHandler();
                     UserSessionConfirm sessionConfirmAnn = findInterceptAnnotation(context, UserSessionConfirm.class);
-                    return confirmHandler.handle(context, token, sessionConfirmAnn != null ? sessionConfirmAnn.redirectUrl() : null);
+                    String redirectUrl = StringUtils.defaultIfBlank(getOwner().getConfig().getTokenConfirmRedirectUrl(), sessionConfirmAnn != null ? sessionConfirmAnn.redirectUrl() : null);
+                    ITokenConfirmHandler confirmHandler = getOwner().getConfig().getTokenConfirmHandler();
+                    return confirmHandler.handle(context, token, StringUtils.defaultIfBlank(redirectUrl, ISingleSignOnConfig.DEFAULT_TOKEN_CONFIRM_REDIRECT_URL));
                 }
             } catch (Exception e) {
                 throw new InterceptException(e.getMessage(), e);

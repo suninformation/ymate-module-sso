@@ -42,7 +42,7 @@ public final class UserSessionCheckInterceptor extends AbstractUserSessionInterc
                 HttpServletRequest httpServletRequest = WebContext.getRequest();
                 //
                 UserSessionCheck sessionCheckAnn = findInterceptAnnotation(context, UserSessionCheck.class);
-                String redirectUrl = sessionCheckAnn != null ? sessionCheckAnn.redirectUrl() : null;
+                String redirectUrl = StringUtils.defaultIfBlank(getOwner().getConfig().getTokenInvalidRedirectUrl(), sessionCheckAnn != null ? sessionCheckAnn.redirectUrl() : null);
                 if (StringUtils.isNotBlank(redirectUrl)) {
                     redirectUrl = ExpressionUtils.bind(WebUtils.getContextParamValue(context, Type.Const.REDIRECT_URL, redirectUrl))
                             .set(Type.Const.REDIRECT_URL, WebUtils.appendQueryStr(httpServletRequest, true)).getResult();
