@@ -87,28 +87,29 @@ public class DefaultTokenAdapter implements ITokenAdapter {
                 params.put(IToken.PARAM_UID, token.getUid());
                 params.put(IToken.PARAM_REMOTE_ADDR, token.getRemoteAddr());
                 params.put(IToken.PARAM_USER_AGENT, token.getUserAgent());
-                params.put(IToken.PARAM_SIGN, ParamUtils.createSignature(params, false, owner.getConfig().getServiceAuthKey()));
-                String serviceUrl = owner.getConfig().getServiceBaseUrl() + owner.getConfig().getServicePrefix() + ISingleSignOnConfig.DEFAULT_CONTROLLER_MAPPING;
+                if (StringUtils.isNotBlank(owner.getConfig().getServiceAuthKey())) {
+                    params.put(IToken.PARAM_NONCE, UUIDUtils.randomStr(16, false));
+                    params.put(IToken.PARAM_SIGN, ParamUtils.createSignature(params, false, true, owner.getConfig().getServiceAuthKey()));
+                }
+                String serviceUrl = String.format("%s%s%s", owner.getConfig().getServiceBaseUrl(), owner.getConfig().getServicePrefix(), ISingleSignOnConfig.DEFAULT_CONTROLLER_MAPPING);
                 IHttpResponse httpResponse = HttpClientHelper.create().post(serviceUrl, params);
                 if (httpResponse != null) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug(httpResponse.toString());
-                    }
                     if (httpResponse.getStatusCode() == HttpServletResponse.SC_OK) {
-                        JsonWrapper jsonWrapper = JsonWrapper.fromJson(httpResponse.getContent());
-                        if (jsonWrapper != null && jsonWrapper.isJsonObject()) {
-                            IWebResult<?> result = WebResult.builder().fromJson(jsonWrapper.getAsJsonObject()).build();
-                            if (result.isSuccess()) {
-                                // 令牌验证通过，则进行本地Cookie存储
-                                owner.getConfig().getTokenAdapter().setToken(token);
-                                // 尝试从响应报文中提取并追加token属性数据
-                                IJsonObjectWrapper dataObj = JsonWrapper.toJson(result.data()).getAsJsonObject();
-                                if (dataObj != null && !dataObj.isEmpty()) {
-                                    dataObj.toMap().forEach((key, value) -> token.addAttribute(key, BlurObject.bind(value).toStringValue()));
-                                }
-                                return true;
+                        IWebResult<?> result = WebResult.builder().fromJson(httpResponse.getContent()).build();
+                        if (result.isSuccess()) {
+                            // 令牌验证通过，则进行本地Cookie存储
+                            owner.getConfig().getTokenAdapter().setToken(token);
+                            // 尝试从响应报文中提取并追加token属性数据
+                            IJsonObjectWrapper dataObj = JsonWrapper.toJson(result.data()).getAsJsonObject();
+                            if (dataObj != null && !dataObj.isEmpty()) {
+                                dataObj.toMap().forEach((key, value) -> token.addAttribute(key, BlurObject.bind(value).toStringValue()));
                             }
+                            return true;
+                        } else if (LOG.isDebugEnabled()) {
+                            LOG.debug(httpResponse.toString());
                         }
+                    } else if (LOG.isDebugEnabled()) {
+                        LOG.debug(httpResponse.toString());
                     }
                 }
             } else {

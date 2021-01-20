@@ -19,7 +19,7 @@ import net.ymate.module.sso.ISingleSignOnConfig;
 import net.ymate.module.sso.IToken;
 import net.ymate.module.sso.ITokenAttributeAdapter;
 import net.ymate.module.sso.SingleSignOn;
-import net.ymate.module.sso.impl.DefaultSignatureExtraParamProcessor;
+import net.ymate.module.sso.support.SingleSignOnSignatureValidator;
 import net.ymate.platform.core.beans.annotation.Inject;
 import net.ymate.platform.validation.validate.VRequired;
 import net.ymate.platform.webmvc.annotation.RequestMapping;
@@ -48,7 +48,7 @@ public class ServerAuthController {
      * @throws Exception 可能产生的任何异常
      */
     @RequestMapping(value = ISingleSignOnConfig.DEFAULT_CONTROLLER_MAPPING, method = Type.HttpMethod.POST)
-    @SignatureValidate(processorClass = DefaultSignatureExtraParamProcessor.class)
+    @SignatureValidate(nonceName = IToken.PARAM_NONCE, validatorClass = SingleSignOnSignatureValidator.class)
     public IView authorize(@VRequired @RequestParam(IToken.PARAM_TOKEN_ID) String tokenId,
                            @VRequired @RequestParam String uid,
                            @VRequired @RequestParam(IToken.PARAM_USER_AGENT) String userAgent,

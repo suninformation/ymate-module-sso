@@ -31,6 +31,8 @@ public interface IToken extends Serializable {
 
     String PARAM_USER_AGENT = "user_agent";
 
+    String PARAM_NONCE = "nonce";
+
     String PARAM_SIGN = "sign";
 
     /**
