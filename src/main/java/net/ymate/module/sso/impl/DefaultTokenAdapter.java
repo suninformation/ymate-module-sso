@@ -35,6 +35,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import javax.crypto.BadPaddingException;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
@@ -142,17 +143,26 @@ public class DefaultTokenAdapter implements ITokenAdapter {
     public IToken getToken() {
         IToken token = null;
         try {
+            HttpServletRequest httpServletRequest = WebContext.getRequest();
             // 优先从请求参数中获取Token数据（一般用于API接口而非浏览器）
-            token = decryptToken(WebContext.getRequest().getParameter(owner.getConfig().getTokenParamName()));
+            token = decryptToken(httpServletRequest.getParameter(owner.getConfig().getTokenParamName()));
             if (token == null) {
                 // 尝试从请求头中获取Token数据
-                token = decryptToken(WebContext.getRequest().getHeader(owner.getConfig().getTokenHeaderName()));
+                token = decryptToken(httpServletRequest.getHeader(owner.getConfig().getTokenHeaderName()));
                 if (token == null) {
-                    // 尝试从Cookie中获取Token数据
-                    String tokenStr = CookieHelper.bind(WebContext.getContext().getOwner())
-                            .getCookie(owner.getConfig().getTokenCookieName())
-                            .toStringValue();
+                    // 兼容请求头：Authorization: Bearer <token>
+                    String tokenStr = StringUtils.trimToNull(httpServletRequest.getHeader(Type.HttpHead.AUTHORIZATION));
+                    if (StringUtils.startsWithIgnoreCase(tokenStr, "Bearer")) {
+                        tokenStr = StringUtils.trimToNull(StringUtils.substring(tokenStr, "Bearer".length()));
+                    }
                     token = decryptToken(tokenStr);
+                    if (token == null) {
+                        // 尝试从Cookie中获取Token数据
+                        tokenStr = CookieHelper.bind(WebContext.getContext().getOwner())
+                                .getCookie(owner.getConfig().getTokenCookieName())
+                                .toStringValue();
+                        token = decryptToken(tokenStr);
+                    }
                 }
             }
         } catch (Exception e) {

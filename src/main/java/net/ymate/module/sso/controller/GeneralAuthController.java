@@ -26,6 +26,7 @@ import net.ymate.platform.webmvc.annotation.RequestMapping;
 import net.ymate.platform.webmvc.annotation.RequestParam;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
+import net.ymate.platform.webmvc.util.WebErrorCode;
 import net.ymate.platform.webmvc.util.WebUtils;
 import net.ymate.platform.webmvc.view.IView;
 import net.ymate.platform.webmvc.view.View;
@@ -44,7 +45,7 @@ public class GeneralAuthController {
     private SingleSignOn owner;
 
     /**
-     * 当存在跨域获取SSO令牌的情况时，需要调整SSO客户端的参数配置：webmvc.redirect_login_url=authorize?redirect_url=${redirect_url}，服务端则仍保持原参数配置不变即可。
+     * 当存在跨域获取SSO令牌的情况时，需要调整SSO客户端的参数配置：module.sso.token_invalid_redirect_url=authorize?redirect_url=${redirect_url}，服务端则仍保持原参数配置不变即可。
      * <p>
      * 注意: 需要保证Cookie作用域名包含子域
      *
@@ -68,8 +69,12 @@ public class GeneralAuthController {
             // 当前服务端用户已登录，则重定向至redirectUrl地址
             return View.redirectView(redirectUrl);
         }
-        // 当前服务端用户尚未登录，则重定向登录视图
-        return View.redirectView(ExpressionUtils.bind(WebUtils.buildRedirectUrl(null, WebContext.getRequest(), redirectUrl, true))
-                .set(Type.Const.REDIRECT_URL, WebUtils.encodeUrl(redirectUrl)).getResult());
+        // 当前服务端用户尚未登录，则重定向登录视图，若未设置令牌无效重定向URL地址则直接显示错误提示视图
+        String tokenInvalidRedirectUrl = owner.getConfig().getTokenInvalidRedirectUrl();
+        if (StringUtils.isBlank(tokenInvalidRedirectUrl)) {
+            return View.redirectView(ExpressionUtils.bind(WebUtils.buildRedirectUrl(null, WebContext.getRequest(), tokenInvalidRedirectUrl, true))
+                    .set(Type.Const.REDIRECT_URL, WebUtils.encodeUrl(redirectUrl)).getResult());
+        }
+        return WebUtils.buildErrorView(WebUtils.getOwner(), WebErrorCode.userSessionInvalidOrTimeout());
     }
 }

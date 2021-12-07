@@ -86,7 +86,7 @@ public final class SingleSignOn implements IModule, ISingleSignOn {
     public void initialize(IApplication owner) throws Exception {
         if (!initialized) {
             //
-            YMP.showVersion("Initializing ymate-module-sso-${version}", new Version(2, 0, 0, SingleSignOn.class, Version.VersionType.Alpha));
+            YMP.showVersion("Initializing ymate-module-sso-${version}", new Version(2, 0, 0, SingleSignOn.class, Version.VersionType.Release));
             //
             this.owner = owner;
             if (config == null) {
