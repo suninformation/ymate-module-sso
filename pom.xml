@@ -165,6 +165,7 @@
                 </exclusions>
                 <scope>provided</scope>
             </dependency>
+            <!--
             <dependency>
                 <groupId>io.jsonwebtoken</groupId>
                 <artifactId>jjwt-impl</artifactId>
@@ -175,7 +176,6 @@
                 <artifactId>jjwt-jackson</artifactId>
                 <version>0.11.2</version>
             </dependency>
-            <!--
             <dependency>
                 <groupId>io.jsonwebtoken</groupId>
                 <artifactId>jjwt-gson</artifactId>

@@ -1,7 +1,7 @@
 # YMATE-MODULE-SSO
 
-[![Maven Central status](https://img.shields.io/maven-central/v/net.ymate.module/ymate-module-unpack.svg)](https://search.maven.org/artifact/net.ymate.module/ymate-module-unpack)
-[![LICENSE](https://img.shields.io/github/license/suninformation/ymate-module-unpack.svg)](https://gitee.com/suninformation/ymate-module-unpack/blob/master/LICENSE)
+[![Maven Central status](https://img.shields.io/maven-central/v/net.ymate.module/ymate-module-sso.svg)](https://search.maven.org/artifact/net.ymate.module/ymate-module-sso)
+[![LICENSE](https://img.shields.io/github/license/suninformation/ymate-module-sso.svg)](https://gitee.com/suninformation/ymate-module-sso/blob/master/LICENSE)
 
 基于 YMP 框架实现的单点登录模块封装。
 
@@ -12,8 +12,8 @@
 ```xml
 <dependency>
     <groupId>net.ymate.module</groupId>
-    <artifactId>ymate-module-unpack</artifactId>
-    <version>1.0.0</version>
+    <artifactId>ymate-module-sso</artifactId>
+    <version>2.0.0</version>
 </dependency>
 ```
 
