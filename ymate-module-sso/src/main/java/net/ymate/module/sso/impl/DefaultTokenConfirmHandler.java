@@ -53,6 +53,10 @@ public class DefaultTokenConfirmHandler implements ITokenConfirmHandler {
         return initialized;
     }
 
+    protected ISingleSignOn getOwner() {
+        return owner;
+    }
+
     @Override
     public IView handle(IContext context, IToken token, String redirectUrl) throws Exception {
         int timeout = owner.getConfig().getTokenConfirmTimeout();

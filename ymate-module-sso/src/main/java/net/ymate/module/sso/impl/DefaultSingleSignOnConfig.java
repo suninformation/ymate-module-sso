@@ -17,10 +17,12 @@ package net.ymate.module.sso.impl;
 
 import net.ymate.module.sso.*;
 import net.ymate.module.sso.annotation.SingleSignOnConf;
+import net.ymate.platform.commons.util.ClassUtils;
+import net.ymate.platform.commons.util.ParamUtils;
 import net.ymate.platform.core.configuration.IConfigReader;
 import net.ymate.platform.core.module.IModuleConfigurer;
 import net.ymate.platform.webmvc.base.Type;
-import net.ymate.platform.webmvc.util.WebUtils;
+import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -138,18 +140,18 @@ public final class DefaultSingleSignOnConfig implements ISingleSignOnConfig {
         if (!initialized) {
             if (enabled) {
                 if (tokenAdapter == null) {
-                    tokenAdapter = new DefaultTokenAdapter();
+                    tokenAdapter = ClassUtils.loadClass(ITokenAdapter.class, DefaultTokenAdapter.class);
                 }
                 tokenAdapter.initialize(owner);
                 //
                 if (tokenConfirmEnabled) {
                     if (tokenConfirmHandler == null) {
-                        tokenConfirmHandler = new DefaultTokenConfirmHandler();
+                        tokenConfirmHandler = ClassUtils.loadClass(ITokenConfirmHandler.class, DefaultTokenConfirmHandler.class);
                     }
                     tokenConfirmHandler.initialize(owner);
                 }
                 //
-                servicePrefix = WebUtils.fixUrl(servicePrefix, false, false);
+                servicePrefix = ParamUtils.fixUrl(servicePrefix, false, false);
                 //
                 if (clientMode) {
                     if (serviceBaseUrl != null) {
@@ -158,10 +160,12 @@ public final class DefaultSingleSignOnConfig implements ISingleSignOnConfig {
                         } else if (!StringUtils.endsWith(serviceBaseUrl, Type.Const.PATH_SEPARATOR)) {
                             serviceBaseUrl += Type.Const.PATH_SEPARATOR;
                         }
+                    } else {
+                        throw new NullArgumentException(SERVICE_BASE_URL);
                     }
                 } else {
                     if (tokenStorageAdapter == null) {
-                        tokenStorageAdapter = new DefaultTokenStorageAdapter();
+                        tokenStorageAdapter = ClassUtils.loadClass(ITokenStorageAdapter.class, DefaultTokenStorageAdapter.class);
                     }
                     tokenStorageAdapter.initialize(owner);
                 }

@@ -39,6 +39,8 @@ public class DefaultToken implements IToken {
 
     private long createTime;
 
+    private long expirationTime;
+
     private long lastActivateTime;
 
     private long lastConfirmTime;
@@ -46,13 +48,7 @@ public class DefaultToken implements IToken {
     private final Map<String, Serializable> attributes = new HashMap<>();
 
     public DefaultToken() {
-    }
-
-    public DefaultToken(String uid, String remoteAddr, String userAgent, long createTime) {
-        this.uid = uid;
-        this.remoteAddr = remoteAddr;
-        this.userAgent = userAgent;
-        this.createTime = createTime > 0 ? createTime : System.currentTimeMillis();
+        this.createTime = System.currentTimeMillis();
     }
 
     @Override
@@ -106,7 +102,20 @@ public class DefaultToken implements IToken {
     }
 
     public void setCreateTime(long createTime) {
-        this.createTime = createTime;
+        if (createTime > 0) {
+            this.createTime = createTime;
+        } else {
+            this.createTime = System.currentTimeMillis();
+        }
+    }
+
+    @Override
+    public long getExpirationTime() {
+        return expirationTime;
+    }
+
+    public void setExpirationTime(long expirationTime) {
+        this.expirationTime = expirationTime;
     }
 
     @Override

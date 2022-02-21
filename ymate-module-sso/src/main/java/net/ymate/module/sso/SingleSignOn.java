@@ -18,8 +18,9 @@ package net.ymate.module.sso;
 import net.ymate.module.sso.controller.GeneralAuthController;
 import net.ymate.module.sso.controller.ServerAuthController;
 import net.ymate.module.sso.impl.DefaultSingleSignOnConfig;
-import net.ymate.module.sso.impl.DefaultToken;
+import net.ymate.module.sso.impl.DefaultTokenBuilder;
 import net.ymate.module.sso.interceptor.*;
+import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.DateTimeUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.core.*;
@@ -224,8 +225,9 @@ public final class SingleSignOn implements IModule, ISingleSignOn {
 
     @Override
     public boolean isTimeout(IToken token) {
+        long now = System.currentTimeMillis();
         int maxAge = config.getTokenMaxAge();
-        return maxAge > 0 && System.currentTimeMillis() - token.getCreateTime() > maxAge * DateTimeUtils.SECOND;
+        return (token.getExpirationTime() > 0 && now > token.getExpirationTime()) || (maxAge > 0 && now - token.getCreateTime() > maxAge * DateTimeUtils.SECOND);
     }
 
     @Override
@@ -245,11 +247,12 @@ public final class SingleSignOn implements IModule, ISingleSignOn {
         if (StringUtils.isBlank(userAgent)) {
             throw new NullArgumentException("userAgent");
         }
-        //
-        DefaultToken token = new DefaultToken(uid, remoteAddr, userAgent, 0);
-        token.setId(config.getTokenAdapter().generateTokenKey());
-        //
-        return token;
+        return ClassUtils.loadClass(ITokenBuilder.class, DefaultTokenBuilder.class)
+                .id(config.getTokenAdapter().generateTokenKey())
+                .uid(uid)
+                .remoteAddr(remoteAddr)
+                .userAgent(userAgent)
+                .build();
     }
 
     @Override

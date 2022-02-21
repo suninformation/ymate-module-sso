@@ -21,6 +21,7 @@ import net.ymate.platform.commons.http.IHttpResponse;
 import net.ymate.platform.commons.json.IJsonObjectWrapper;
 import net.ymate.platform.commons.json.JsonWrapper;
 import net.ymate.platform.commons.lang.BlurObject;
+import net.ymate.platform.commons.util.ClassUtils;
 import net.ymate.platform.commons.util.ParamUtils;
 import net.ymate.platform.commons.util.RuntimeUtils;
 import net.ymate.platform.commons.util.UUIDUtils;
@@ -74,6 +75,10 @@ public class DefaultTokenAdapter implements ITokenAdapter {
         }
     }
 
+    protected ISingleSignOn getOwner() {
+        return owner;
+    }
+
     @Override
     public String generateTokenKey() {
         return UUIDUtils.UUID();
@@ -81,59 +86,58 @@ public class DefaultTokenAdapter implements ITokenAdapter {
 
     @Override
     public boolean validateToken(IToken token) throws Exception {
-        try {
-            if (owner.getConfig().isClientMode()) {
-                Map<String, String> params = new HashMap<>(5);
-                params.put(IToken.PARAM_TOKEN_ID, token.getId());
-                params.put(IToken.PARAM_UID, token.getUid());
-                params.put(IToken.PARAM_REMOTE_ADDR, token.getRemoteAddr());
-                params.put(IToken.PARAM_USER_AGENT, token.getUserAgent());
-                if (StringUtils.isNotBlank(owner.getConfig().getServiceAuthKey())) {
-                    params.put(IToken.PARAM_NONCE, UUIDUtils.randomStr(16, false));
-                    params.put(IToken.PARAM_SIGN, ParamUtils.createSignature(params, false, true, owner.getConfig().getServiceAuthKey()));
-                }
-                String serviceUrl = String.format("%s%s%s", owner.getConfig().getServiceBaseUrl(), owner.getConfig().getServicePrefix(), ISingleSignOnConfig.DEFAULT_CONTROLLER_MAPPING);
-                IHttpResponse httpResponse = HttpClientHelper.create().post(serviceUrl, params);
-                if (httpResponse != null) {
-                    if (httpResponse.getStatusCode() == HttpServletResponse.SC_OK) {
-                        IWebResult<?> result = WebResult.builder().fromJson(httpResponse.getContent()).build();
-                        if (result.isSuccess()) {
-                            // 令牌验证通过，则进行本地Cookie存储
-                            owner.getConfig().getTokenAdapter().setToken(token);
-                            // 尝试从响应报文中提取并追加token属性数据
-                            IJsonObjectWrapper dataObj = JsonWrapper.toJson(result.data()).getAsJsonObject();
-                            if (dataObj != null && !dataObj.isEmpty()) {
-                                dataObj.toMap().forEach((key, value) -> token.addAttribute(key, BlurObject.bind(value).toStringValue()));
-                            }
-                            return true;
-                        } else if (LOG.isDebugEnabled()) {
-                            LOG.debug(httpResponse.toString());
-                        }
-                    } else if (LOG.isDebugEnabled()) {
-                        LOG.debug(httpResponse.toString());
+        if (owner.getConfig().isClientMode()) {
+            return doValidateTokenIfClientMode(token);
+        } else {
+            ITokenStorageAdapter tokenStorageAdapter = owner.getConfig().getTokenStorageAdapter();
+            // 尝试从存储中加载原始令牌数据并进行有效性验证
+            IToken originalToken = tokenStorageAdapter.load(token.getId());
+            if (originalToken != null && StringUtils.equals(token.getUid(), originalToken.getUid()) && StringUtils.equals(token.getUserAgent(), originalToken.getUserAgent())) {
+                boolean ipCheckFailed = owner.getConfig().isIpCheckEnabled() && !StringUtils.equals(token.getRemoteAddr(), originalToken.getRemoteAddr());
+                if (owner.isTimeout(originalToken) || ipCheckFailed) {
+                    tokenStorageAdapter.remove(originalToken);
+                } else {
+                    // 尝试加载令牌自定义属性
+                    ITokenAttributeAdapter tokenAttributeAdapter = owner.getConfig().getTokenAttributeAdapter();
+                    if (tokenAttributeAdapter != null) {
+                        tokenAttributeAdapter.loadAttributes(token);
                     }
-                }
-            } else {
-                ITokenStorageAdapter tokenStorageAdapter = owner.getConfig().getTokenStorageAdapter();
-                // 尝试从存储中加载原始令牌数据并进行有效性验证
-                IToken originalToken = tokenStorageAdapter.load(token.getId());
-                if (originalToken != null && StringUtils.equals(token.getUid(), originalToken.getUid()) && StringUtils.equals(token.getUserAgent(), originalToken.getUserAgent())) {
-                    boolean ipCheckFailed = owner.getConfig().isIpCheckEnabled() && !StringUtils.equals(token.getRemoteAddr(), originalToken.getRemoteAddr());
-                    if (owner.isTimeout(originalToken) || ipCheckFailed) {
-                        tokenStorageAdapter.remove(originalToken);
-                    } else {
-                        // 尝试加载令牌自定义属性
-                        ITokenAttributeAdapter tokenAttributeAdapter = owner.getConfig().getTokenAttributeAdapter();
-                        if (tokenAttributeAdapter != null) {
-                            tokenAttributeAdapter.loadAttributes(token);
-                        }
-                        return true;
-                    }
+                    return true;
                 }
             }
-        } catch (Exception e) {
-            if (LOG.isWarnEnabled()) {
-                LOG.warn(String.format("An exception occurred while validate token '%s' for user '%s'", token.getId(), token.getUid()), RuntimeUtils.unwrapThrow(e));
+        }
+        return false;
+    }
+
+    protected boolean doValidateTokenIfClientMode(IToken token) throws Exception {
+        Map<String, String> params = new HashMap<>(6);
+        params.put(IToken.PARAM_TOKEN_ID, token.getId());
+        params.put(IToken.PARAM_UID, token.getUid());
+        params.put(IToken.PARAM_REMOTE_ADDR, token.getRemoteAddr());
+        params.put(IToken.PARAM_USER_AGENT, token.getUserAgent());
+        if (StringUtils.isNotBlank(owner.getConfig().getServiceAuthKey())) {
+            params.put(IToken.PARAM_NONCE, ParamUtils.createNonceStr());
+            params.put(IToken.PARAM_SIGN, ParamUtils.createSignature(params, false, true, owner.getConfig().getServiceAuthKey()));
+        }
+        String serviceUrl = StringUtils.join(owner.getConfig().getServiceBaseUrl(), owner.getConfig().getServicePrefix(), ISingleSignOnConfig.DEFAULT_CONTROLLER_MAPPING);
+        IHttpResponse httpResponse = HttpClientHelper.create().post(serviceUrl, params);
+        if (httpResponse != null) {
+            if (httpResponse.getStatusCode() == HttpServletResponse.SC_OK) {
+                IWebResult<?> result = WebResult.builder().fromJson(httpResponse.getContent()).build();
+                if (result.isSuccess()) {
+                    // 令牌验证通过，则进行本地Cookie存储
+                    owner.getConfig().getTokenAdapter().setToken(token);
+                    // 尝试从响应报文中提取并追加token属性数据
+                    IJsonObjectWrapper dataObj = JsonWrapper.toJson(result.data()).getAsJsonObject();
+                    if (dataObj != null && !dataObj.isEmpty()) {
+                        dataObj.toMap().forEach((key, value) -> token.addAttribute(key, BlurObject.bind(value).toStringValue()));
+                    }
+                    return true;
+                } else if (LOG.isDebugEnabled()) {
+                    LOG.debug(httpResponse.toString());
+                }
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug(httpResponse.toString());
             }
         }
         return false;
@@ -210,9 +214,13 @@ public class DefaultTokenAdapter implements ITokenAdapter {
                 String encryptKey = userAgent + StringUtils.trimToEmpty(owner.getConfig().getServiceAuthKey());
                 String[] tokenArr = StringUtils.split(WebUtils.decryptStr(tokenStr, encryptKey), "|");
                 if (tokenArr != null && tokenArr.length == TOKEN_PART_LENGTH) {
-                    DefaultToken token = new DefaultToken(tokenArr[1], tokenArr[2], userAgent, BlurObject.bind(tokenArr[3]).toLongValue());
-                    token.setId(tokenArr[0]);
-                    return token;
+                    return ClassUtils.loadClass(ITokenBuilder.class, DefaultTokenBuilder.class)
+                            .id(tokenArr[0])
+                            .uid(tokenArr[1])
+                            .remoteAddr(tokenArr[2])
+                            .userAgent(userAgent)
+                            .createTime(BlurObject.bind(tokenArr[3]).toLongValue())
+                            .build();
                 }
             } catch (Exception e) {
                 if (!(e instanceof BadPaddingException)) {

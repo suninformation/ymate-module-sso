@@ -78,6 +78,13 @@ public interface IToken extends Serializable {
     long getCreateTime();
 
     /**
+     * 获取令牌过期时间（毫秒值）
+     *
+     * @return 返回令牌过期时间，小于等于0表示不限制
+     */
+    long getExpirationTime();
+
+    /**
      * 获取最后活跃时间（毫秒值）
      *
      * @return 返回最后活跃时间

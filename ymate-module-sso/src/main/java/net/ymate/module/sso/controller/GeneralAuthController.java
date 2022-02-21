@@ -56,13 +56,15 @@ public class GeneralAuthController {
     @RequestMapping(ISingleSignOnConfig.DEFAULT_CONTROLLER_MAPPING)
     @UserSessionStatus
     public IView authorize(@RequestParam(Type.Const.REDIRECT_URL) String redirectUrl) throws Exception {
-        if (StringUtils.isBlank(redirectUrl) || StringUtils.contains(redirectUrl, owner.getConfig().getServicePrefix() + ISingleSignOnConfig.DEFAULT_CONTROLLER_MAPPING)) {
+        // TODO 验证重定向URL地址是否合法有效
+        String serviceUrl = StringUtils.join(owner.getConfig().getServicePrefix(), ISingleSignOnConfig.DEFAULT_CONTROLLER_MAPPING);
+        if (StringUtils.isBlank(redirectUrl) || StringUtils.contains(redirectUrl, serviceUrl)) {
             return HttpStatusView.METHOD_NOT_ALLOWED;
         }
         if (owner.getConfig().isClientMode()) {
             // 当客户端访问该控制器方法时，将请求重定向至服务端
             Map<String, String> params = Collections.singletonMap(Type.Const.REDIRECT_URL, redirectUrl);
-            return View.redirectView(ParamUtils.appendQueryParamValue(owner.getConfig().getServiceBaseUrl() + owner.getConfig().getServicePrefix() + ISingleSignOnConfig.DEFAULT_CONTROLLER_MAPPING, params, true, WebContext.getContext().getOwner().getConfig().getDefaultCharsetEncoding()));
+            return View.redirectView(ParamUtils.appendQueryParamValue(StringUtils.join(owner.getConfig().getServiceBaseUrl(), serviceUrl), params, true, WebContext.getContext().getOwner().getConfig().getDefaultCharsetEncoding()));
         }
         IToken token = owner.getCurrentToken();
         if (token != null) {
