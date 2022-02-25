@@ -25,8 +25,10 @@ import net.ymate.platform.core.support.ErrorCode;
 import net.ymate.platform.webmvc.IWebErrorProcessor;
 import net.ymate.platform.webmvc.IWebMvc;
 import net.ymate.platform.webmvc.IWebResultBuilder;
+import net.ymate.platform.webmvc.RequestMeta;
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.context.WebContext;
+import net.ymate.platform.webmvc.impl.DefaultResponseErrorProcessor;
 import net.ymate.platform.webmvc.impl.DefaultWebErrorProcessor;
 import net.ymate.platform.webmvc.util.WebResult;
 import net.ymate.platform.webmvc.util.WebUtils;
@@ -48,14 +50,21 @@ public abstract class AbstractUserSessionInterceptor extends AbstractInterceptor
     protected IView buildReturnView(HttpServletRequest httpServletRequest, ErrorCode errorCode, String redirectUrl, int redirectTimeInterval, boolean observeSilence) {
         IWebMvc owner = WebContext.getContext().getOwner();
         IWebErrorProcessor errorProcessor = owner.getConfig().getErrorProcessor();
-        String defaultViewFormat = errorProcessor instanceof DefaultWebErrorProcessor ? ((DefaultWebErrorProcessor) errorProcessor).getErrorDefaultViewFormat() : null;
         //
-        if (WebUtils.isAjax(httpServletRequest) || WebUtils.isXmlFormat(httpServletRequest) || WebUtils.isJsonFormat(httpServletRequest) || StringUtils.containsAny(defaultViewFormat, Type.Const.FORMAT_JSON, Type.Const.FORMAT_XML)) {
-            IWebResultBuilder builder = WebResult.builder(errorCode);
-            if (StringUtils.isNotBlank(redirectUrl)) {
-                builder.attr(Type.Const.REDIRECT_URL, redirectUrl);
+        boolean useDefaultRespErr = false;
+        RequestMeta requestMeta = WebContext.getContext().getAttribute(RequestMeta.class.getName());
+        if (requestMeta != null && DefaultResponseErrorProcessor.class.equals(requestMeta.getErrorProcessor())) {
+            useDefaultRespErr = true;
+        }
+        if (!useDefaultRespErr) {
+            String defaultViewFormat = errorProcessor instanceof DefaultWebErrorProcessor ? ((DefaultWebErrorProcessor) errorProcessor).getErrorDefaultViewFormat() : null;
+            if (WebUtils.isAjax(httpServletRequest) || WebUtils.isXmlFormat(httpServletRequest) || WebUtils.isJsonFormat(httpServletRequest) || StringUtils.containsAny(defaultViewFormat, Type.Const.FORMAT_JSON, Type.Const.FORMAT_XML)) {
+                IWebResultBuilder builder = WebResult.builder(errorCode);
+                if (StringUtils.isNotBlank(redirectUrl)) {
+                    builder.attr(Type.Const.REDIRECT_URL, redirectUrl);
+                }
+                return WebResult.formatView(builder.build(), defaultViewFormat);
             }
-            return WebResult.formatView(builder.build(), defaultViewFormat);
         }
         if (observeSilence && StringUtils.isNotBlank(redirectUrl)) {
             return View.redirectView(redirectUrl);
