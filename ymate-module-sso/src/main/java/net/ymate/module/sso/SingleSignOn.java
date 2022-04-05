@@ -166,8 +166,16 @@ public final class SingleSignOn implements IModule, ISingleSignOn {
             //
             if (config.isEnabled()) {
                 config.getTokenAdapter().close();
-                if (!config.isClientMode() && config.getTokenStorageAdapter() != null) {
-                    config.getTokenStorageAdapter().close();
+                if (config.isTokenConfirmEnabled() && config.getTokenConfirmHandler() != null) {
+                    config.getTokenConfirmHandler().close();
+                }
+                if (!config.isClientMode()) {
+                    if (config.getTokenAttributeAdapter() != null) {
+                        config.getTokenAttributeAdapter().close();
+                    }
+                    if (config.getTokenStorageAdapter() != null) {
+                        config.getTokenStorageAdapter().close();
+                    }
                 }
             }
             //

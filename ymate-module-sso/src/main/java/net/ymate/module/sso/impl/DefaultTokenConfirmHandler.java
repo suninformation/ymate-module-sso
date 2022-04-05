@@ -53,6 +53,13 @@ public class DefaultTokenConfirmHandler implements ITokenConfirmHandler {
         return initialized;
     }
 
+    @Override
+    public void close() throws Exception {
+        if (initialized) {
+            this.initialized = false;
+        }
+    }
+
     protected ISingleSignOn getOwner() {
         return owner;
     }

@@ -16,6 +16,7 @@
 package net.ymate.module.sso;
 
 import net.ymate.platform.core.support.IContext;
+import net.ymate.platform.core.support.IDestroyable;
 import net.ymate.platform.core.support.IInitialization;
 import net.ymate.platform.webmvc.view.IView;
 
@@ -24,7 +25,7 @@ import net.ymate.platform.webmvc.view.IView;
  *
  * @author 刘镇 (suninformation@163.com) on 2017/04/25 20:00
  */
-public interface ITokenConfirmHandler extends IInitialization<ISingleSignOn> {
+public interface ITokenConfirmHandler extends IInitialization<ISingleSignOn>, IDestroyable {
 
     /**
      * 处理完成安全确认动作

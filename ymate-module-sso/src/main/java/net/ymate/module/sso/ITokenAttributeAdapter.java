@@ -15,10 +15,13 @@
  */
 package net.ymate.module.sso;
 
+import net.ymate.platform.core.support.IDestroyable;
+import net.ymate.platform.core.support.IInitialization;
+
 /**
  * @author 刘镇 (suninformation@163.com) on 2017/05/10 17:47
  */
-public interface ITokenAttributeAdapter {
+public interface ITokenAttributeAdapter extends IInitialization<ISingleSignOn>, IDestroyable {
 
     /**
      * 执行加载用户自定义属性数据

@@ -168,6 +168,13 @@ public final class DefaultSingleSignOnConfig implements ISingleSignOnConfig {
                         tokenStorageAdapter = ClassUtils.loadClass(ITokenStorageAdapter.class, DefaultTokenStorageAdapter.class);
                     }
                     tokenStorageAdapter.initialize(owner);
+                    //
+                    if (tokenAttributeAdapter == null) {
+                        tokenAttributeAdapter = ClassUtils.loadClass(ITokenAttributeAdapter.class);
+                    }
+                    if (tokenAttributeAdapter != null) {
+                        tokenAttributeAdapter.initialize(owner);
+                    }
                 }
             }
             initialized = true;

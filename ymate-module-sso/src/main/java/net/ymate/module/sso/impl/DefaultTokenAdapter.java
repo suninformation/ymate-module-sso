@@ -97,10 +97,15 @@ public class DefaultTokenAdapter implements ITokenAdapter {
                 if (owner.isTimeout(originalToken) || ipCheckFailed) {
                     tokenStorageAdapter.remove(originalToken);
                 } else {
-                    // 尝试加载令牌自定义属性
-                    ITokenAttributeAdapter tokenAttributeAdapter = owner.getConfig().getTokenAttributeAdapter();
-                    if (tokenAttributeAdapter != null) {
-                        tokenAttributeAdapter.loadAttributes(token);
+                    if (!originalToken.getAttributes().isEmpty()) {
+                        // 若原始令牌中属性映射不为空则直接使用
+                        token.getAttributes().putAll(originalToken.getAttributes());
+                    } else {
+                        // 否则尝试加载令牌自定义属性
+                        ITokenAttributeAdapter tokenAttributeAdapter = owner.getConfig().getTokenAttributeAdapter();
+                        if (tokenAttributeAdapter != null) {
+                            tokenAttributeAdapter.loadAttributes(token);
+                        }
                     }
                     return true;
                 }
